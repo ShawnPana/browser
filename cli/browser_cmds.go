@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"browser/browser"
+	"browser/core"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -24,8 +24,8 @@ func cmdStart(args []string) {
 		}
 	}
 
-	ctx := browser.NewContext()
-	debugURL, dataDir, err := browser.Launch(ctx, browser.LaunchOptions{
+	ctx := core.NewContext()
+	debugURL, dataDir, err := core.Launch(ctx, core.LaunchOptions{
 		Headless: headless,
 		Insecure: insecure,
 	})
@@ -33,15 +33,15 @@ func cmdStart(args []string) {
 		Fatal("failed to start browser: %v", err)
 	}
 
-	s, _ := browser.LoadState(ctx)
+	s, _ := core.LoadState(ctx)
 	if s == nil {
-		s = &browser.State{}
+		s = &core.State{}
 	}
 	s.DataDir = dataDir
 	s.AddBrowser(debugURL, "local")
 	s.ActivePage = 0
 
-	if err := browser.SaveState(ctx, s); err != nil {
+	if err := core.SaveState(ctx, s); err != nil {
 		Fatal("failed to save state: %v", err)
 	}
 
@@ -49,8 +49,8 @@ func cmdStart(args []string) {
 }
 
 func cmdStop(args []string) {
-	ctx := browser.NewContext()
-	s, bro, err := browser.WithBrowser(ctx)
+	ctx := core.NewContext()
+	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -71,9 +71,9 @@ func cmdStop(args []string) {
 	s.ActivePage = 0
 
 	if len(s.Browsers) == 0 {
-		browser.RemoveState(ctx)
+		core.RemoveState(ctx)
 	} else {
-		browser.SaveState(ctx, s)
+		core.SaveState(ctx, s)
 	}
 
 	fmt.Println("stopped")
@@ -85,8 +85,8 @@ func isCloudURL(url string) bool {
 	return cloudURLPattern.MatchString(url)
 }
 
-func stopCloudBrowser(ctx *browser.Context, debugURL string) {
-	cfg := browser.LoadCloudConfig(ctx)
+func stopCloudBrowser(ctx *core.Context, debugURL string) {
+	cfg := core.LoadCloudConfig(ctx)
 	if cfg.APIKey == "" {
 		return
 	}
@@ -100,7 +100,7 @@ func stopCloudBrowser(ctx *browser.Context, debugURL string) {
 	browserID := parts[0]
 
 	body := strings.NewReader(`{"action":"stop"}`)
-	req, err := http.NewRequest("PATCH", browser.CloudBaseURL+"/browsers/"+browserID, body)
+	req, err := http.NewRequest("PATCH", core.CloudBaseURL+"/browsers/"+browserID, body)
 	if err != nil {
 		return
 	}
@@ -120,10 +120,10 @@ func cmdConnect(args []string) {
 		Fatal("usage: browser connect <host:port | https://... | index>")
 	}
 
-	ctx := browser.NewContext()
-	s, _ := browser.LoadState(ctx)
+	ctx := core.NewContext()
+	s, _ := core.LoadState(ctx)
 	if s == nil {
-		s = &browser.State{}
+		s = &core.State{}
 	}
 
 	target := args[0]
@@ -135,7 +135,7 @@ func cmdConnect(args []string) {
 		}
 		s.Active = s.Browsers[idx].URL
 		s.ActivePage = 0
-		if err := browser.SaveState(ctx, s); err != nil {
+		if err := core.SaveState(ctx, s); err != nil {
 			Fatal("failed to save state: %v", err)
 		}
 		fmt.Println(s.Active)
@@ -150,7 +150,7 @@ func cmdConnect(args []string) {
 
 	s.AddBrowser(debugURL, source)
 	s.ActivePage = 0
-	if err := browser.SaveState(ctx, s); err != nil {
+	if err := core.SaveState(ctx, s); err != nil {
 		Fatal("failed to save state: %v", err)
 	}
 
@@ -228,8 +228,8 @@ func parseIndex(s string) (int, bool) {
 }
 
 func cmdStatus(args []string) {
-	ctx := browser.NewContext()
-	s, err := browser.LoadState(ctx)
+	ctx := core.NewContext()
+	s, err := core.LoadState(ctx)
 	if err != nil {
 		Fatal("failed to load state: %v", err)
 	}
@@ -244,7 +244,7 @@ func cmdStatus(args []string) {
 			marker = "* "
 		}
 		alive := "dead"
-		if browser.IsAlive(b.URL) {
+		if core.IsAlive(b.URL) {
 			alive = "alive"
 		}
 		fmt.Printf("%s[%d] %s (%s, %s)\n", marker, i, b.URL, b.Source, alive)

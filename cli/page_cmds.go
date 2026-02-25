@@ -1,13 +1,13 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 )
 
 func cmdURL(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -19,8 +19,8 @@ func cmdURL(args []string) {
 }
 
 func cmdTitle(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -32,8 +32,8 @@ func cmdTitle(args []string) {
 }
 
 func cmdHTML(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -52,8 +52,8 @@ func cmdText(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser text <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -68,8 +68,8 @@ func cmdAttr(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser attr <selector> <name>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

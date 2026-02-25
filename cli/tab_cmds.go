@@ -1,15 +1,15 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"fmt"
 	"strconv"
 )
 
 func cmdPages(args []string) {
-	ctx := browser.NewContext()
-	s, bro, err := browser.WithBrowser(ctx)
+	ctx := core.NewContext()
+	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -35,8 +35,8 @@ func cmdPage(args []string) {
 		Fatal("invalid index: %s", args[0])
 	}
 
-	ctx := browser.NewContext()
-	s, bro, err := browser.WithBrowser(ctx)
+	ctx := core.NewContext()
+	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -46,7 +46,7 @@ func cmdPage(args []string) {
 	}
 
 	s.ActivePage = idx
-	if err := browser.SaveState(ctx, s); err != nil {
+	if err := core.SaveState(ctx, s); err != nil {
 		Fatal("failed to save state: %v", err)
 	}
 
@@ -66,8 +66,8 @@ func cmdNewPage(args []string) {
 		url = args[0]
 	}
 
-	ctx := browser.NewContext()
-	s, bro, err := browser.WithBrowser(ctx)
+	ctx := core.NewContext()
+	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -78,7 +78,7 @@ func cmdNewPage(args []string) {
 	}
 
 	s.ActivePage = idx
-	if err := browser.SaveState(ctx, s); err != nil {
+	if err := core.SaveState(ctx, s); err != nil {
 		Fatal("failed to save state: %v", err)
 	}
 
@@ -86,8 +86,8 @@ func cmdNewPage(args []string) {
 }
 
 func cmdClosePage(args []string) {
-	ctx := browser.NewContext()
-	s, bro, err := browser.WithBrowser(ctx)
+	ctx := core.NewContext()
+	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -114,7 +114,7 @@ func cmdClosePage(args []string) {
 		s.ActivePage = 0
 	}
 
-	if err := browser.SaveState(ctx, s); err != nil {
+	if err := core.SaveState(ctx, s); err != nil {
 		Fatal("failed to save state: %v", err)
 	}
 

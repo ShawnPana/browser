@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"fmt"
 	"os"
 	"strconv"
@@ -13,8 +13,8 @@ func cmdJS(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser js <expression>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -30,8 +30,8 @@ func cmdClick(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser click <selector|x y>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -54,8 +54,8 @@ func cmdInput(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser input <selector|x y> <text>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -83,8 +83,8 @@ func cmdClear(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser clear <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -97,8 +97,8 @@ func cmdSelect(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser select <selector> <value>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -111,8 +111,8 @@ func cmdSubmit(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser submit <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -125,8 +125,8 @@ func cmdHover(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser hover <selector|x y>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -149,8 +149,8 @@ func cmdFocus(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser focus <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -163,8 +163,8 @@ func cmdFile(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser file <selector> <path|->")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -177,8 +177,8 @@ func cmdDownload(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser download <selector> [file|-]")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -212,8 +212,8 @@ func cmdScroll(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser scroll <selector|x y> <delta>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -248,8 +248,8 @@ func cmdDrag(args []string) {
 	if len(args) < 4 {
 		Fatal("usage: browser drag <x1> <y1> <x2> <y2>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -273,8 +273,8 @@ func cmdElementAt(args []string) {
 	if len(args) < 2 {
 		Fatal("usage: browser element-at <x> <y>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

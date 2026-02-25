@@ -1,16 +1,16 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 )
 
 func cmdOpen(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser open <url>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -20,8 +20,8 @@ func cmdOpen(args []string) {
 }
 
 func cmdBack(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -31,8 +31,8 @@ func cmdBack(args []string) {
 }
 
 func cmdForward(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -48,8 +48,8 @@ func cmdReload(args []string) {
 			hard = true
 		}
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

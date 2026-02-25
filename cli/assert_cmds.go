@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"fmt"
 )
 
@@ -10,8 +10,8 @@ func cmdExists(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser exists <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -29,8 +29,8 @@ func cmdCount(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser count <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -45,8 +45,8 @@ func cmdVisible(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser visible <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -82,8 +82,8 @@ func cmdAssert(args []string) {
 		}
 	}
 
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -31,8 +31,8 @@ func cmdAXTree(args []string) {
 		i++
 	}
 
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -79,8 +79,8 @@ func cmdAXFind(args []string) {
 		i++
 	}
 
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -118,8 +118,8 @@ func cmdAXNode(args []string) {
 		}
 	}
 
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

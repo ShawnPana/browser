@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"fmt"
 	"strconv"
 )
@@ -45,8 +45,8 @@ func cmdScreenshot(args []string) {
 		i++
 	}
 
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

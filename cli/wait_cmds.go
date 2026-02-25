@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/browser"
-	"browser/browser/tools"
+	"browser/core"
+	"browser/core/tools"
 	"strconv"
 	"time"
 )
@@ -11,8 +11,8 @@ func cmdWait(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser wait <selector>")
 	}
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -22,8 +22,8 @@ func cmdWait(args []string) {
 }
 
 func cmdWaitLoad(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -33,8 +33,8 @@ func cmdWaitLoad(args []string) {
 }
 
 func cmdWaitStable(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -44,8 +44,8 @@ func cmdWaitStable(args []string) {
 }
 
 func cmdWaitIdle(args []string) {
-	ctx := browser.NewContext()
-	_, _, page, err := browser.WithPage(ctx)
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}

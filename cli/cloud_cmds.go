@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"browser/browser"
+	"browser/core"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,17 +35,17 @@ func cloudLogin(args []string) {
 	if len(args) < 1 {
 		Fatal("usage: browser cloud login <api-key>")
 	}
-	ctx := browser.NewContext()
-	cfg := browser.CloudConfig{APIKey: args[0]}
-	if err := browser.SaveCloudConfig(ctx, cfg); err != nil {
+	ctx := core.NewContext()
+	cfg := core.CloudConfig{APIKey: args[0]}
+	if err := core.SaveCloudConfig(ctx, cfg); err != nil {
 		Fatal("failed to save cloud config: %v", err)
 	}
 	fmt.Println("logged in")
 }
 
 func cloudLogout(args []string) {
-	ctx := browser.NewContext()
-	if err := browser.RemoveCloudConfig(ctx); err != nil {
+	ctx := core.NewContext()
+	if err := core.RemoveCloudConfig(ctx); err != nil {
 		// Ignore if file doesn't exist
 	}
 	fmt.Println("logged out")
@@ -63,15 +63,15 @@ func cloudREST(args []string) {
 		bodyStr = strings.Join(args[2:], " ")
 	}
 
-	ctx := browser.NewContext()
-	cfg := browser.LoadCloudConfig(ctx)
+	ctx := core.NewContext()
+	cfg := core.LoadCloudConfig(ctx)
 	if cfg.APIKey == "" {
 		Fatal("no API key configured (use 'browser cloud login <key>' or set BROWSER_USE_API_KEY)")
 	}
 
-	url := browser.CloudBaseURL + path
+	url := core.CloudBaseURL + path
 	if !strings.HasPrefix(path, "/") {
-		url = browser.CloudBaseURL + "/" + path
+		url = core.CloudBaseURL + "/" + path
 	}
 
 	var body io.Reader
@@ -115,13 +115,13 @@ func cloudPoll(args []string) {
 	}
 	taskID := args[0]
 
-	ctx := browser.NewContext()
-	cfg := browser.LoadCloudConfig(ctx)
+	ctx := core.NewContext()
+	cfg := core.LoadCloudConfig(ctx)
 	if cfg.APIKey == "" {
 		Fatal("no API key configured")
 	}
 
-	url := browser.CloudBaseURL + "/tasks/" + taskID
+	url := core.CloudBaseURL + "/tasks/" + taskID
 
 	client := &http.Client{Timeout: 10 * time.Second}
 
@@ -163,8 +163,8 @@ func cloudPoll(args []string) {
 }
 
 func cloudHelp() {
-	ctx := browser.NewContext()
-	cfg := browser.LoadCloudConfig(ctx)
+	ctx := core.NewContext()
+	cfg := core.LoadCloudConfig(ctx)
 
 	// Try to fetch OpenAPI spec
 	if cfg.APIKey != "" {
