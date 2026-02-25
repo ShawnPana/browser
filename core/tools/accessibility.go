@@ -138,7 +138,7 @@ func AXFind(page *rod.Page, name, role string) ([]AXNode, error) {
 }
 
 func AXNodeInfo(page *rod.Page, selector string) (*AXNode, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return nil, err
 	}

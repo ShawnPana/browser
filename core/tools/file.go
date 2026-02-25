@@ -33,7 +33,7 @@ func FileUpload(page *rod.Page, selector string, path string) error {
 		return err
 	}
 
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func FileUpload(page *rod.Page, selector string, path string) error {
 // Download downloads the resource referenced by an element's href or src attribute.
 // Returns the data, suggested filename, and any error.
 func Download(page *rod.Page, selector string) ([]byte, string, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return nil, "", err
 	}

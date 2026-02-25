@@ -31,7 +31,7 @@ func HTML(page *rod.Page, selector string) (string, error) {
 		}
 		return res.Value.Str(), nil
 	}
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return "", err
 	}
@@ -39,7 +39,7 @@ func HTML(page *rod.Page, selector string) (string, error) {
 }
 
 func Text(page *rod.Page, selector string) (string, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return "", err
 	}
@@ -47,7 +47,7 @@ func Text(page *rod.Page, selector string) (string, error) {
 }
 
 func Attr(page *rod.Page, selector, name string) (string, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,7 @@ func Attr(page *rod.Page, selector, name string) (string, error) {
 }
 
 func Value(page *rod.Page, selector string) (string, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return "", err
 	}
@@ -74,7 +74,7 @@ func Value(page *rod.Page, selector string) (string, error) {
 }
 
 func Box(page *rod.Page, selector string) (map[string]float64, error) {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return nil, err
 	}

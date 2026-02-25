@@ -10,6 +10,18 @@ import (
 	"github.com/go-rod/rod/lib/proto"
 )
 
+// findElement returns the element matching selector, failing immediately if not found.
+func findElement(page *rod.Page, selector string) (*rod.Element, error) {
+	has, el, err := page.Has(selector)
+	if err != nil {
+		return nil, err
+	}
+	if !has {
+		return nil, fmt.Errorf("element not found: %s", selector)
+	}
+	return el, nil
+}
+
 // IsCoordinate checks if the first two args look like x,y coordinates.
 func IsCoordinate(args []string) bool {
 	if len(args) < 2 {
@@ -34,7 +46,7 @@ func ParseCoords(xStr, yStr string) (float64, float64, error) {
 }
 
 func ClickSelector(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -57,7 +69,7 @@ func ClickCoords(page *rod.Page, x, y float64) error {
 }
 
 func InputSelector(page *rod.Page, selector, text string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -75,7 +87,7 @@ func InputCoordsImpl(page *rod.Page, x, y float64, text string) error {
 }
 
 func Clear(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -111,7 +123,7 @@ func Submit(page *rod.Page, selector string) error {
 }
 
 func HoverSelector(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -123,7 +135,7 @@ func HoverCoords(page *rod.Page, x, y float64) error {
 }
 
 func Focus(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -181,7 +193,7 @@ func Drag(page *rod.Page, x1, y1, x2, y2 float64, steps int) error {
 }
 
 func TypeSelector(page *rod.Page, selector, text string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -200,7 +212,7 @@ func TypeCoordsImpl(page *rod.Page, x, y float64, text string) error {
 }
 
 func DblClickSelector(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -223,7 +235,7 @@ func DblClickCoords(page *rod.Page, x, y float64) error {
 }
 
 func RightClickSelector(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
@@ -268,7 +280,7 @@ func Uncheck(page *rod.Page, selector string) error {
 }
 
 func ScrollIntoView(page *rod.Page, selector string) error {
-	el, err := page.Element(selector)
+	el, err := findElement(page, selector)
 	if err != nil {
 		return err
 	}
