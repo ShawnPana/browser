@@ -4,10 +4,12 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/go-rod/rod"
+	"github.com/go-rod/rod/lib/proto"
 )
 
 // WithPage loads state, connects to the active browser, and returns the active page.
@@ -43,6 +45,18 @@ func WithPage(ctx *Context) (*State, *rod.Browser, *rod.Page, error) {
 	}
 
 	page := pages[idx].Timeout(ctx.Timeout)
+
+	// Auto-dismiss JS dialogs (alert/confirm/prompt/beforeunload) so commands
+	// don't hang waiting for user interaction that can't happen in a CLI.
+	go page.EachEvent(func(e *proto.PageJavascriptDialogOpening) {
+		shouldAccept := e.Type != proto.PageDialogTypePrompt
+		_ = proto.PageHandleJavaScriptDialog{
+			Accept:     shouldAccept,
+			PromptText: e.DefaultPrompt,
+		}.Call(page)
+		fmt.Fprintf(os.Stderr, "[%s] %s\n", e.Type, e.Message)
+	})()
+
 	return s, browser, page, nil
 }
 
