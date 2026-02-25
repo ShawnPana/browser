@@ -10,16 +10,14 @@ import (
 	"github.com/go-rod/rod/lib/proto"
 )
 
-// findElement returns the element matching selector, failing immediately if not found.
+// findElement returns the element matching selector, searching across iframes and shadow DOMs.
 func findElement(page *rod.Page, selector string) (*rod.Element, error) {
-	has, el, err := page.Has(selector)
+	res, err := page.Timeout(2 * time.Second).Search(selector)
 	if err != nil {
-		return nil, err
-	}
-	if !has {
 		return nil, fmt.Errorf("element not found: %s", selector)
 	}
-	return el, nil
+	defer res.Release()
+	return res.First, nil
 }
 
 // IsCoordinate checks if the first two args look like x,y coordinates.

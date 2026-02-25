@@ -147,6 +147,9 @@ browser eval <expression>          # Evaluate JS and print result
 browser ax-tree                    # Print full accessibility tree
 browser ax-tree --depth 3          # Limit tree depth
 browser ax-tree --json             # Output as JSON
+browser ax-tree --with-coords      # Include CSS pixel coordinates per element
+browser ax-tree --selectors        # Include CSS selectors per element (traverses iframes)
+browser ax-tree --selectors --depth 5  # With selectors and depth limit
 browser ax-find --name "Submit"    # Find nodes by accessible name
 browser ax-find --role button      # Find nodes by ARIA role
 browser ax-node <selector>         # Get accessibility info for element

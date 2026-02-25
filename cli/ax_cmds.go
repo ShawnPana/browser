@@ -11,6 +11,8 @@ import (
 func cmdAXTree(args []string) {
 	depth := 0
 	asJSON := false
+	withCoords := false
+	withSelectors := false
 
 	i := 0
 	for i < len(args) {
@@ -27,6 +29,10 @@ func cmdAXTree(args []string) {
 			depth = d
 		case "--json":
 			asJSON = true
+		case "--with-coords":
+			withCoords = true
+		case "--selectors":
+			withSelectors = true
 		}
 		i++
 	}
@@ -37,7 +43,7 @@ func cmdAXTree(args []string) {
 		Fatal("%v", err)
 	}
 
-	nodes, err := tools.AXTree(page, depth)
+	nodes, err := tools.AXTree(page, depth, withCoords, withSelectors)
 	if err != nil {
 		Fatal("%v", err)
 	}

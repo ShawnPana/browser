@@ -3,60 +3,128 @@ package tools
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 )
 
+type AXBox struct {
+	X      float64 `json:"x"`
+	Y      float64 `json:"y"`
+	Width  float64 `json:"width"`
+	Height float64 `json:"height"`
+}
+
 type AXNode struct {
 	Role       string   `json:"role"`
 	Name       string   `json:"name"`
 	Value      string   `json:"value,omitempty"`
 	Properties []string `json:"properties,omitempty"`
+	Box        *AXBox   `json:"box,omitempty"`
+	Selector   string   `json:"selector,omitempty"`
 	Children   []AXNode `json:"children,omitempty"`
 }
 
-func AXTree(page *rod.Page, maxDepth int) ([]AXNode, error) {
-	res, err := proto.AccessibilityGetFullAXTree{}.Call(page)
+func AXTree(page *rod.Page, maxDepth int, withCoords bool, withSelectors bool) ([]AXNode, error) {
+	return axTreeForFrame(page, "", maxDepth, 0, withCoords, withSelectors)
+}
+
+func axTreeForFrame(page *rod.Page, frameID proto.PageFrameID, maxDepth, startDepth int, withCoords, withSelectors bool) ([]AXNode, error) {
+	req := proto.AccessibilityGetFullAXTree{}
+	if frameID != "" {
+		req.FrameID = frameID
+	}
+	res, err := req.Call(page)
 	if err != nil {
 		return nil, err
 	}
 
-	// Build a map of nodeID -> node
 	nodeMap := make(map[proto.AccessibilityAXNodeID]*proto.AccessibilityAXNode)
 	for i := range res.Nodes {
 		nodeMap[res.Nodes[i].NodeID] = res.Nodes[i]
 	}
 
-	// Build tree from root
+	var boxMap map[proto.AccessibilityAXNodeID]*AXBox
+	if withCoords {
+		boxMap = resolveBoxes(page, res.Nodes)
+	}
+
+	var selMap map[proto.AccessibilityAXNodeID]string
+	if withSelectors {
+		selMap = resolveSelectors(page, res.Nodes)
+	}
+
 	var roots []AXNode
 	for _, n := range res.Nodes {
 		if len(n.ParentID) == 0 || n.ParentID == "" {
-			roots = append(roots, buildAXTree(n, nodeMap, 0, maxDepth))
+			roots = append(roots, buildAXNode(page, n, nodeMap, boxMap, selMap, startDepth, maxDepth, withCoords, withSelectors))
 		}
 	}
 	return roots, nil
 }
 
-func buildAXTree(n *proto.AccessibilityAXNode, nodeMap map[proto.AccessibilityAXNodeID]*proto.AccessibilityAXNode, depth, maxDepth int) AXNode {
+func resolveBoxes(page *rod.Page, nodes []*proto.AccessibilityAXNode) map[proto.AccessibilityAXNodeID]*AXBox {
+	boxMap := make(map[proto.AccessibilityAXNodeID]*AXBox)
+	for _, n := range nodes {
+		if n.Ignored || n.BackendDOMNodeID == 0 {
+			continue
+		}
+		res, err := proto.DOMGetBoxModel{BackendNodeID: n.BackendDOMNodeID}.Call(page)
+		if err != nil {
+			continue // hidden or off-screen elements
+		}
+		q := res.Model.Content
+		if len(q) < 8 {
+			continue
+		}
+		// Content quad: [x1,y1, x2,y2, x3,y3, x4,y4]
+		x := q[0]
+		y := q[1]
+		w := q[2] - q[0]
+		h := q[5] - q[1]
+		boxMap[n.NodeID] = &AXBox{X: x, Y: y, Width: w, Height: h}
+	}
+	return boxMap
+}
+
+func buildAXNode(page *rod.Page, n *proto.AccessibilityAXNode, nodeMap map[proto.AccessibilityAXNodeID]*proto.AccessibilityAXNode, boxMap map[proto.AccessibilityAXNodeID]*AXBox, selMap map[proto.AccessibilityAXNodeID]string, depth, maxDepth int, withCoords, withSelectors bool) AXNode {
 	node := convertAXNode(n)
+	if boxMap != nil {
+		node.Box = boxMap[n.NodeID]
+	}
+	if selMap != nil {
+		node.Selector = selMap[n.NodeID]
+	}
 
 	if maxDepth > 0 && depth >= maxDepth {
+		return node
+	}
+
+	// Traverse into iframe child frames
+	role := axValueStr(n.Role)
+	if role == "Iframe" && n.BackendDOMNodeID != 0 {
+		desc, err := proto.DOMDescribeNode{BackendNodeID: n.BackendDOMNodeID}.Call(page)
+		if err == nil && desc.Node.FrameID != "" {
+			children, err := axTreeForFrame(page, desc.Node.FrameID, maxDepth, depth+1, withCoords, withSelectors)
+			if err == nil {
+				node.Children = children
+			}
+		}
 		return node
 	}
 
 	for _, childID := range n.ChildIDs {
 		if child, ok := nodeMap[childID]; ok {
 			if isIgnored(child) {
-				// Recurse into children of ignored nodes
 				for _, grandchildID := range child.ChildIDs {
 					if gc, ok := nodeMap[grandchildID]; ok {
-						node.Children = append(node.Children, buildAXTree(gc, nodeMap, depth+1, maxDepth))
+						node.Children = append(node.Children, buildAXNode(page, gc, nodeMap, boxMap, selMap, depth+1, maxDepth, withCoords, withSelectors))
 					}
 				}
 			} else {
-				node.Children = append(node.Children, buildAXTree(child, nodeMap, depth+1, maxDepth))
+				node.Children = append(node.Children, buildAXNode(page, child, nodeMap, boxMap, selMap, depth+1, maxDepth, withCoords, withSelectors))
 			}
 		}
 	}
@@ -172,6 +240,60 @@ func AXNodeInfo(page *rod.Page, selector string) (*AXNode, error) {
 	return nil, fmt.Errorf("no accessibility info for selector: %s", selector)
 }
 
+func resolveSelectors(page *rod.Page, nodes []*proto.AccessibilityAXNode) map[proto.AccessibilityAXNodeID]string {
+	selMap := make(map[proto.AccessibilityAXNodeID]string)
+	for _, n := range nodes {
+		if n.Ignored || n.BackendDOMNodeID == 0 {
+			continue
+		}
+		desc, err := proto.DOMDescribeNode{BackendNodeID: n.BackendDOMNodeID}.Call(page)
+		if err != nil {
+			continue
+		}
+		sel := buildSelector(desc.Node)
+		if sel != "" {
+			selMap[n.NodeID] = sel
+		}
+	}
+	return selMap
+}
+
+func buildSelector(node *proto.DOMNode) string {
+	attrs := parseAttributes(node.Attributes)
+	tag := node.LocalName
+
+	// #id
+	if id, ok := attrs["id"]; ok && id != "" {
+		return "#" + id
+	}
+
+	// tag[name="value"]
+	if name, ok := attrs["name"]; ok && name != "" {
+		return tag + `[name="` + name + `"]`
+	}
+
+	// tag.class1.class2
+	if class, ok := attrs["class"]; ok && class != "" {
+		classes := strings.Fields(class)
+		return tag + "." + strings.Join(classes, ".")
+	}
+
+	// input[type="value"]
+	if typ, ok := attrs["type"]; ok && typ != "" && tag == "input" {
+		return tag + `[type="` + typ + `"]`
+	}
+
+	return ""
+}
+
+func parseAttributes(attrs []string) map[string]string {
+	m := make(map[string]string)
+	for i := 0; i+1 < len(attrs); i += 2 {
+		m[attrs[i]] = attrs[i+1]
+	}
+	return m
+}
+
 func FormatAXTree(nodes []AXNode, indent int) string {
 	var b strings.Builder
 	for _, n := range nodes {
@@ -180,7 +302,17 @@ func FormatAXTree(nodes []AXNode, indent int) string {
 		if len(n.Properties) > 0 {
 			props = " (" + strings.Join(n.Properties, ", ") + ")"
 		}
-		fmt.Fprintf(&b, "%s[%s] %q%s\n", prefix, n.Role, n.Name, props)
+		coords := ""
+		if n.Box != nil {
+			cx := int(math.Round(n.Box.X + n.Box.Width/2))
+			cy := int(math.Round(n.Box.Y + n.Box.Height/2))
+			coords = fmt.Sprintf(" @%d,%d", cx, cy)
+		}
+		sel := ""
+		if n.Selector != "" {
+			sel = fmt.Sprintf(" {%s}", n.Selector)
+		}
+		fmt.Fprintf(&b, "%s[%s] %q%s%s%s\n", prefix, n.Role, n.Name, props, coords, sel)
 		if len(n.Children) > 0 {
 			b.WriteString(FormatAXTree(n.Children, indent+1))
 		}
