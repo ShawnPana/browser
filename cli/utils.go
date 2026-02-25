@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"browser/core/tools"
 )
 
 // Fatal prints an error to stderr and exits with code 2.
@@ -22,34 +24,18 @@ func CheckFail(format string, args ...interface{}) {
 // PrintResult prints a value to stdout. Strings are printed unquoted,
 // objects/arrays are pretty-printed as JSON, booleans/numbers are raw.
 func PrintResult(v interface{}) {
-	switch val := v.(type) {
-	case nil:
-		fmt.Println("null")
-	case string:
-		fmt.Println(val)
-	case bool:
-		fmt.Println(val)
-	case json.Number:
-		fmt.Println(val)
-	case float64:
-		// Print as integer if it's a whole number
-		if val == float64(int64(val)) {
-			fmt.Println(int64(val))
-		} else {
-			fmt.Println(val)
-		}
-	case int:
-		fmt.Println(val)
-	case int64:
-		fmt.Println(val)
-	default:
-		data, err := json.MarshalIndent(val, "", "  ")
-		if err != nil {
-			fmt.Println(val)
-		} else {
-			fmt.Println(string(data))
+	s := tools.FormatResult(v)
+	// Pretty-print if it looks like JSON object/array
+	if len(s) > 0 && (s[0] == '{' || s[0] == '[') {
+		var raw json.RawMessage
+		if json.Unmarshal([]byte(s), &raw) == nil {
+			if out, err := json.MarshalIndent(raw, "", "  "); err == nil {
+				fmt.Println(string(out))
+				return
+			}
 		}
 	}
+	fmt.Println(s)
 }
 
 // PrintJSON pretty-prints a JSON-encoded byte slice.

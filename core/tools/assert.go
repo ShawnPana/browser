@@ -1,7 +1,6 @@
 package tools
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/go-rod/rod"
@@ -47,7 +46,7 @@ func Assert(page *rod.Page, expr, expected string) (bool, string, error) {
 		return false, "", err
 	}
 
-	resultStr := fmt.Sprintf("%v", result)
+	resultStr := FormatResult(result)
 
 	if expected == "" {
 		// Truthy mode
