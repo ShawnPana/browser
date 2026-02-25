@@ -4,45 +4,21 @@ import (
 	"browser/core"
 	"browser/core/tools"
 	"fmt"
-	"strconv"
 )
 
 func cmdScreenshot(args []string) {
-	width := 1280
-	height := 720
-	fullPage := true
+	fullPage := false
 	file := ""
 
-	i := 0
-	for i < len(args) {
-		switch args[i] {
-		case "-w":
-			i++
-			if i >= len(args) {
-				Fatal("-w requires a value")
-			}
-			w, err := strconv.Atoi(args[i])
-			if err != nil {
-				Fatal("invalid width: %s", args[i])
-			}
-			width = w
-		case "-h":
-			i++
-			if i >= len(args) {
-				Fatal("-h requires a value")
-			}
-			h, err := strconv.Atoi(args[i])
-			if err != nil {
-				Fatal("invalid height: %s", args[i])
-			}
-			height = h
-			fullPage = false
+	for _, arg := range args {
+		switch arg {
+		case "--full":
+			fullPage = true
 		default:
 			if file == "" {
-				file = args[i]
+				file = arg
 			}
 		}
-		i++
 	}
 
 	ctx := core.NewContext()
@@ -52,8 +28,6 @@ func cmdScreenshot(args []string) {
 	}
 
 	filename, err := tools.Screenshot(page, tools.ScreenshotOptions{
-		Width:    width,
-		Height:   height,
 		FullPage: fullPage,
 		File:     file,
 	})
@@ -61,5 +35,5 @@ func cmdScreenshot(args []string) {
 		Fatal("%v", err)
 	}
 
-	fmt.Printf("%s (%dx%d viewport)\n", filename, width, height)
+	fmt.Println(filename)
 }

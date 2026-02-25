@@ -9,40 +9,40 @@ import (
 )
 
 type ScreenshotOptions struct {
-	Width    int
-	Height   int
 	FullPage bool
 	File     string
 }
 
 func Screenshot(page *rod.Page, opts ScreenshotOptions) (string, error) {
-	// Set viewport
-	if err := setViewport(page, opts.Width, opts.Height); err != nil {
-		return "", err
-	}
-
-	var data []byte
-	var err error
-
-	if opts.FullPage {
-		data, err = page.Screenshot(true, &proto.PageCaptureScreenshot{
-			Format: proto.PageCaptureScreenshotFormatPng,
-		})
-	} else {
-		data, err = page.Screenshot(false, &proto.PageCaptureScreenshot{
-			Format: proto.PageCaptureScreenshotFormatPng,
-			Clip: &proto.PageViewport{
-				X:      0,
-				Y:      0,
-				Width:  float64(opts.Width),
-				Height: float64(opts.Height),
-				Scale:  1,
-			},
-		})
-	}
+	metrics, err := proto.PageGetLayoutMetrics{}.Call(page)
 	if err != nil {
 		return "", err
 	}
+
+	var w, h float64
+	if opts.FullPage {
+		w = metrics.CSSContentSize.Width
+		h = metrics.CSSContentSize.Height
+	} else {
+		w = float64(metrics.CSSLayoutViewport.ClientWidth)
+		h = float64(metrics.CSSLayoutViewport.ClientHeight)
+	}
+
+	req := &proto.PageCaptureScreenshot{
+		Format: proto.PageCaptureScreenshotFormatPng,
+		Clip: &proto.PageViewport{
+			X:      0,
+			Y:      0,
+			Width:  w,
+			Height: h,
+			Scale:  1,
+		},
+	}
+	shot, err := req.Call(page)
+	if err != nil {
+		return "", err
+	}
+	data := shot.Data
 
 	filename := opts.File
 	if filename == "" {
@@ -54,15 +54,6 @@ func Screenshot(page *rod.Page, opts ScreenshotOptions) (string, error) {
 	}
 
 	return filename, nil
-}
-
-func setViewport(page *rod.Page, width, height int) error {
-	return (proto.EmulationSetDeviceMetricsOverride{
-		Width:             width,
-		Height:            height,
-		DeviceScaleFactor: 1,
-		Mobile:            false,
-	}).Call(page)
 }
 
 func autoScreenshotName() string {

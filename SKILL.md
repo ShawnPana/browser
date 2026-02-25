@@ -122,10 +122,9 @@ browser wait-idle                  # Wait for idle callback
 browser sleep <seconds>            # Sleep for duration
 
 # Output
-browser screenshot                 # Auto-named screenshot.png
+browser screenshot                 # Screenshot current viewport
 browser screenshot file.png        # Save to specific file
-browser screenshot -w 1920 -h 1080 file.png  # Custom viewport
-browser screenshot -h 720 file.png # Clip to viewport height (no full page)
+browser screenshot --full file.png # Full scrollable page
 browser pdf <path>                 # Save page as PDF
 
 # Tabs
