@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func cmdPages(args []string) {
+func cmdTabs(args []string) {
 	ctx := core.NewContext()
 	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {
@@ -26,9 +26,9 @@ func cmdPages(args []string) {
 	fmt.Println(FormatTabList(tabs, s.ActivePage))
 }
 
-func cmdPage(args []string) {
+func cmdSwitch(args []string) {
 	if len(args) < 1 {
-		Fatal("usage: browser page <index>")
+		Fatal("usage: browser switch <index>")
 	}
 	idx, err := strconv.Atoi(args[0])
 	if err != nil {
@@ -60,7 +60,7 @@ func cmdPage(args []string) {
 	}
 }
 
-func cmdNewPage(args []string) {
+func cmdNewTab(args []string) {
 	url := ""
 	if len(args) > 0 {
 		url = args[0]
@@ -85,7 +85,7 @@ func cmdNewPage(args []string) {
 	fmt.Printf("[%d]\n", idx)
 }
 
-func cmdClosePage(args []string) {
+func cmdCloseTab(args []string) {
 	ctx := core.NewContext()
 	s, bro, err := core.WithBrowser(ctx)
 	if err != nil {

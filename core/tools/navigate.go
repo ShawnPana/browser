@@ -13,25 +13,19 @@ func Open(page *rod.Page, url string) error {
 }
 
 func Back(page *rod.Page) error {
-	res, err := proto.PageGetNavigationHistory{}.Call(page)
-	if err != nil || res.CurrentIndex <= 0 {
-		_, err = page.Eval(`() => history.back()`)
+	_, err := page.Eval(`() => history.back()`)
+	if err != nil {
 		return err
 	}
-	return proto.PageNavigateToHistoryEntry{
-		EntryID: res.Entries[res.CurrentIndex-1].ID,
-	}.Call(page)
+	return page.WaitLoad()
 }
 
 func Forward(page *rod.Page) error {
-	res, err := proto.PageGetNavigationHistory{}.Call(page)
-	if err != nil || res.CurrentIndex >= len(res.Entries)-1 {
-		_, err = page.Eval(`() => history.forward()`)
+	_, err := page.Eval(`() => history.forward()`)
+	if err != nil {
 		return err
 	}
-	return proto.PageNavigateToHistoryEntry{
-		EntryID: res.Entries[res.CurrentIndex+1].ID,
-	}.Call(page)
+	return page.WaitLoad()
 }
 
 func Reload(page *rod.Page, hard bool) error {

@@ -39,24 +39,24 @@ func Execute() {
 		cmdReload(rest)
 
 	// Page info
-	case "url":
-		cmdURL(rest)
-	case "title":
-		cmdTitle(rest)
-	case "html":
-		cmdHTML(rest)
-	case "text":
-		cmdText(rest)
-	case "attr":
-		cmdAttr(rest)
+	case "get":
+		cmdGet(rest)
 
 	// Interaction
-	case "js":
-		cmdJS(rest)
+	case "eval":
+		cmdEval(rest)
 	case "click":
 		cmdClick(rest)
+	case "dblclick":
+		cmdDblClick(rest)
+	case "rightclick":
+		cmdRightClick(rest)
 	case "input":
 		cmdInput(rest)
+	case "type":
+		cmdType(rest)
+	case "press":
+		cmdPress(rest)
 	case "clear":
 		cmdClear(rest)
 	case "select":
@@ -67,42 +67,52 @@ func Execute() {
 		cmdHover(rest)
 	case "focus":
 		cmdFocus(rest)
+	case "check":
+		cmdCheck(rest)
+	case "uncheck":
+		cmdUncheck(rest)
 	case "file":
 		cmdFile(rest)
 	case "download":
 		cmdDownload(rest)
 	case "scroll":
 		cmdScroll(rest)
+	case "scrollintoview":
+		cmdScrollIntoView(rest)
 	case "drag":
 		cmdDrag(rest)
 	case "element-at":
 		cmdElementAt(rest)
+	case "keyboard":
+		cmdKeyboard(rest)
 
 	// Waiting
 	case "wait":
 		cmdWait(rest)
-	case "waitload":
+	case "wait-load":
 		cmdWaitLoad(rest)
-	case "waitstable":
+	case "wait-stable":
 		cmdWaitStable(rest)
-	case "waitidle":
+	case "wait-idle":
 		cmdWaitIdle(rest)
 	case "sleep":
 		cmdSleep(rest)
 
-	// Screenshot
+	// Output
 	case "screenshot":
 		cmdScreenshot(rest)
+	case "pdf":
+		cmdPDF(rest)
 
 	// Tabs
-	case "pages":
-		cmdPages(rest)
-	case "page":
-		cmdPage(rest)
-	case "newpage":
-		cmdNewPage(rest)
-	case "closepage":
-		cmdClosePage(rest)
+	case "tabs":
+		cmdTabs(rest)
+	case "switch":
+		cmdSwitch(rest)
+	case "new-tab":
+		cmdNewTab(rest)
+	case "close-tab":
+		cmdCloseTab(rest)
 
 	// Checks
 	case "exists":
@@ -157,42 +167,57 @@ Navigation:
   reload [--hard]            Reload page
 
 Page Info:
-  url                        Print current URL
-  title                      Print page title
-  html [selector]            Print HTML (full page or element)
-  text <selector>            Print element text
-  attr <selector> <name>     Print element attribute
+  get url                    Print current URL
+  get title                  Print page title
+  get html [selector]        Print HTML (full page or element)
+  get text <selector>        Print element text
+  get attr <selector> <name> Print element attribute
+  get value <selector>       Print input element value
+  get box <selector>         Print bounding box (x, y, width, height)
+  get styles <sel> [prop...] Print computed styles
 
 Interaction:
-  js <expr>                  Evaluate JavaScript
+  eval <expr>                Evaluate JavaScript
   click <sel|x y>            Click element or coordinates
-  input <sel|x y> <text>     Type text into element or at coordinates
+  dblclick <sel|x y>         Double-click element or coordinates
+  rightclick <sel|x y>       Right-click element or coordinates
+  input <sel|x y> <text>     Clear and type text (replace contents)
+  type <sel|x y> <text>      Type text without clearing (append)
+  press <key>                Press key combo (e.g. Enter, Control+a)
   clear <sel>                Clear input field
   select <sel> <value>       Select option value
   submit <sel>               Submit form
   hover <sel|x y>            Hover over element or coordinates
   focus <sel>                Focus element
+  check <sel>                Check checkbox
+  uncheck <sel>              Uncheck checkbox
   file <sel> <path|->        Upload file to input
   download <sel> [file|-]    Download linked resource
   scroll <sel|x y> <delta>   Scroll element or at coordinates
+  scrollintoview <sel>       Scroll element into viewport
   drag <x1 y1> <x2 y2>      Drag from point to point
   element-at <x y>           Describe element at coordinates
 
+Keyboard:
+  keyboard type <text>       Type text with real keystrokes (no selector)
+  keyboard inserttext <text> Insert text without key events (no selector)
+
 Waiting:
   wait <sel>                 Wait for element to be visible
-  waitload                   Wait for page load
-  waitstable                 Wait for DOM stability
-  waitidle                   Wait for idle
+  wait-load                  Wait for page load
+  wait-stable                Wait for DOM stability
+  wait-idle                  Wait for idle
   sleep <seconds>            Sleep for duration
 
-Screenshots:
+Output:
   screenshot [-w N] [-h N] [file]  Capture screenshot
+  pdf <path>                       Save page as PDF
 
 Tabs:
-  pages                      List open pages
-  page <index>               Switch to page by index
-  newpage [url]              Open new page
-  closepage [index]          Close page
+  tabs                       List open tabs
+  switch <index>             Switch to tab by index
+  new-tab [url]              Open new tab
+  close-tab [index]          Close tab
 
 Checks:
   exists <sel>               Check if element exists (exit 0/1)

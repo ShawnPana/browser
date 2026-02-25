@@ -45,6 +45,9 @@ func NewPage(browser *rod.Browser, url string) (*rod.Page, int, error) {
 
 	if url != "" {
 		page = browser.MustPage(url)
+		if err := page.WaitLoad(); err != nil {
+			return nil, 0, err
+		}
 	} else {
 		page = browser.MustPage()
 	}

@@ -30,7 +30,7 @@ browser start
 browser open https://example.com
 
 # Inspect the page
-browser title
+browser get title
 browser ax-tree --depth 3
 
 # Interact
@@ -73,12 +73,15 @@ The browser persists as a background process across CLI invocations. State is st
 
 | Command | Description |
 |---------|-------------|
-| `browser url` | Print current URL |
-| `browser title` | Print page title |
-| `browser html` | Print full page HTML |
-| `browser html <selector>` | Print element's outer HTML |
-| `browser text <selector>` | Print element's visible text |
-| `browser attr <selector> <name>` | Print element attribute value |
+| `browser get url` | Print current URL |
+| `browser get title` | Print page title |
+| `browser get html` | Print full page HTML |
+| `browser get html <selector>` | Print element's outer HTML |
+| `browser get text <selector>` | Print element's visible text |
+| `browser get attr <selector> <name>` | Print element attribute value |
+| `browser get value <selector>` | Print input element value |
+| `browser get box <selector>` | Print bounding box (x, y, width, height) |
+| `browser get styles <sel> [prop...]` | Print computed styles |
 
 ### Interaction
 
@@ -89,38 +92,57 @@ All interaction commands accept either a **CSS selector** or **x,y coordinates**
 | Command | Description |
 |---------|-------------|
 | `browser click <selector>` | Click element |
-| `browser input <selector> <text>` | Clear field and type text |
+| `browser dblclick <selector>` | Double-click element |
+| `browser rightclick <selector>` | Right-click element |
+| `browser input <selector> <text>` | Clear field and type text (replace) |
+| `browser type <selector> <text>` | Type text without clearing (append) |
+| `browser press <key>` | Press key combo (e.g. `Enter`, `Control+a`) |
 | `browser clear <selector>` | Clear input field |
 | `browser select <selector> <value>` | Select dropdown option by value |
 | `browser submit <selector>` | Submit form |
 | `browser hover <selector>` | Hover over element |
 | `browser focus <selector>` | Focus element |
+| `browser check <selector>` | Check checkbox |
+| `browser uncheck <selector>` | Uncheck checkbox |
+| `browser scrollintoview <selector>` | Scroll element into viewport |
 
 **With coordinates:**
 
 | Command | Description |
 |---------|-------------|
 | `browser click <x> <y>` | Click at coordinates |
-| `browser input <x> <y> <text>` | Click at coordinates, then type |
+| `browser dblclick <x> <y>` | Double-click at coordinates |
+| `browser rightclick <x> <y>` | Right-click at coordinates |
+| `browser input <x> <y> <text>` | Click at coordinates, clear, then type |
+| `browser type <x> <y> <text>` | Click at coordinates, then type (no clear) |
 | `browser hover <x> <y>` | Hover at coordinates |
 | `browser scroll <x> <y> <delta>` | Scroll at coordinates (delta in px) |
 | `browser scroll <selector> <delta>` | Scroll inside an element |
 | `browser drag <x1> <y1> <x2> <y2>` | Drag from one point to another |
 | `browser element-at <x> <y>` | Describe the DOM element at coordinates |
 
+### Keyboard
+
+Send keystrokes without a selector (acts on the currently focused element):
+
+| Command | Description |
+|---------|-------------|
+| `browser keyboard type <text>` | Type text with real keystrokes |
+| `browser keyboard inserttext <text>` | Insert text without key events |
+
 ### JavaScript
 
 ```bash
-browser js <expression>
+browser eval <expression>
 ```
 
 Evaluates a JavaScript expression in the page context. The expression is auto-wrapped in `() => { return (expr); }`.
 
 ```bash
-browser js 'document.title'                                    # → Example Domain
-browser js '2 + 2'                                             # → 4
-browser js 'document.querySelectorAll("a").length'             # → 12
-browser js 'JSON.stringify([...document.querySelectorAll("h2")].map(e => e.textContent))'
+browser eval 'document.title'                                    # → Example Domain
+browser eval '2 + 2'                                             # → 4
+browser eval 'document.querySelectorAll("a").length'             # → 12
+browser eval 'JSON.stringify([...document.querySelectorAll("h2")].map(e => e.textContent))'
 ```
 
 Output formatting: strings are printed unquoted, numbers and booleans are printed raw, objects and arrays are pretty-printed as JSON.
@@ -145,18 +167,19 @@ browser download 'a.download-link' ./output.pdf
 | Command | Description |
 |---------|-------------|
 | `browser wait <selector>` | Wait for element to become visible |
-| `browser waitload` | Wait for page load event |
-| `browser waitstable` | Wait for DOM stability (300ms) |
-| `browser waitidle` | Wait for requestIdleCallback (5s) |
+| `browser wait-load` | Wait for page load event |
+| `browser wait-stable` | Wait for DOM stability (300ms) |
+| `browser wait-idle` | Wait for requestIdleCallback (5s) |
 | `browser sleep <seconds>` | Sleep for a duration |
 
-### Screenshots
+### Output
 
 ```bash
 browser screenshot                          # → screenshot.png (auto-named)
 browser screenshot page.png                 # → page.png
 browser screenshot -w 1920 file.png         # Custom width, full-page height
 browser screenshot -w 1920 -h 1080 file.png # Fixed viewport clip
+browser pdf page.pdf                        # Save page as PDF
 ```
 
 When `-h` is specified, the screenshot clips to the viewport height. Without it, the full scrollable page is captured.
@@ -165,21 +188,21 @@ When `-h` is specified, the screenshot clips to the viewport height. Without it,
 
 | Command | Description |
 |---------|-------------|
-| `browser pages` | List all open pages |
-| `browser page <index>` | Switch active page |
-| `browser newpage [url]` | Open a new tab |
-| `browser closepage [index]` | Close a tab (defaults to active) |
+| `browser tabs` | List all open tabs |
+| `browser switch <index>` | Switch active tab |
+| `browser new-tab [url]` | Open a new tab |
+| `browser close-tab [index]` | Close a tab (defaults to active) |
 
 ```bash
-browser newpage https://site-a.com
-browser newpage https://site-b.com
-browser pages
+browser new-tab https://site-a.com
+browser new-tab https://site-b.com
+browser tabs
 # * [0] about:blank - about:blank
 #   [1] Site A - https://site-a.com
 #   [2] Site B - https://site-b.com
 
-browser page 1      # switch to Site A
-browser closepage 0  # close the blank tab
+browser switch 1     # switch to Site A
+browser close-tab 0  # close the blank tab
 ```
 
 ### Checks and Assertions
@@ -285,11 +308,13 @@ browser/
 │   ├── utils.go         # Output formatting helpers
 │   ├── browser_cmds.go  # start, stop, connect, status
 │   ├── nav_cmds.go      # open, back, forward, reload
-│   ├── page_cmds.go     # url, title, html, text, attr
-│   ├── interact_cmds.go # click, input, hover, scroll, drag, ...
-│   ├── wait_cmds.go     # wait, waitload, waitstable, waitidle, sleep
+│   ├── page_cmds.go     # get url/title/html/text/attr/value/box/styles
+│   ├── interact_cmds.go # click, dblclick, rightclick, input, type, press, ...
+│   ├── keyboard_cmds.go # keyboard type, keyboard inserttext
+│   ├── wait_cmds.go     # wait, wait-load, wait-stable, wait-idle, sleep
 │   ├── screenshot_cmds.go
-│   ├── tab_cmds.go      # pages, page, newpage, closepage
+│   ├── pdf_cmds.go      # pdf
+│   ├── tab_cmds.go      # tabs, switch, new-tab, close-tab
 │   ├── assert_cmds.go   # exists, count, visible, assert
 │   ├── ax_cmds.go       # ax-tree, ax-find, ax-node
 │   └── cloud_cmds.go    # cloud login, REST passthrough, poll
@@ -303,7 +328,9 @@ browser/
 │       ├── navigate.go
 │       ├── pageinfo.go
 │       ├── interact.go
+│       ├── keyboard.go
 │       ├── js.go
+│       ├── pdf.go
 │       ├── screenshot.go
 │       ├── tabs.go
 │       ├── wait.go

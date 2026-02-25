@@ -9,9 +9,9 @@ import (
 	"strings"
 )
 
-func cmdJS(args []string) {
+func cmdEval(args []string) {
 	if len(args) < 1 {
-		Fatal("usage: browser js <expression>")
+		Fatal("usage: browser eval <expr>")
 	}
 	ctx := core.NewContext()
 	_, _, page, err := core.WithPage(ctx)
@@ -265,6 +265,140 @@ func cmdDrag(args []string) {
 
 	steps := 10
 	if err := tools.Drag(page, x1, y1, x2, y2, steps); err != nil {
+		Fatal("%v", err)
+	}
+}
+
+func cmdType(args []string) {
+	if len(args) < 2 {
+		Fatal("usage: browser type <selector|x y> <text>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if tools.IsCoordinate(args) {
+		if len(args) < 3 {
+			Fatal("usage: browser type <x> <y> <text>")
+		}
+		x, y, err := tools.ParseCoords(args[0], args[1])
+		if err != nil {
+			Fatal("%v", err)
+		}
+		text := strings.Join(args[2:], " ")
+		if err := tools.TypeCoordsImpl(page, x, y, text); err != nil {
+			Fatal("%v", err)
+		}
+	} else {
+		text := strings.Join(args[1:], " ")
+		if err := tools.TypeSelector(page, args[0], text); err != nil {
+			Fatal("%v", err)
+		}
+	}
+}
+
+func cmdDblClick(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser dblclick <selector|x y>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if tools.IsCoordinate(args) {
+		x, y, err := tools.ParseCoords(args[0], args[1])
+		if err != nil {
+			Fatal("%v", err)
+		}
+		if err := tools.DblClickCoords(page, x, y); err != nil {
+			Fatal("%v", err)
+		}
+	} else {
+		if err := tools.DblClickSelector(page, args[0]); err != nil {
+			Fatal("%v", err)
+		}
+	}
+}
+
+func cmdRightClick(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser rightclick <selector|x y>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if tools.IsCoordinate(args) {
+		x, y, err := tools.ParseCoords(args[0], args[1])
+		if err != nil {
+			Fatal("%v", err)
+		}
+		if err := tools.RightClickCoords(page, x, y); err != nil {
+			Fatal("%v", err)
+		}
+	} else {
+		if err := tools.RightClickSelector(page, args[0]); err != nil {
+			Fatal("%v", err)
+		}
+	}
+}
+
+func cmdPress(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser press <key>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	combo := strings.Join(args, "+")
+	if err := tools.Press(page, combo); err != nil {
+		Fatal("%v", err)
+	}
+}
+
+func cmdCheck(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser check <selector>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if err := tools.Check(page, args[0]); err != nil {
+		Fatal("%v", err)
+	}
+}
+
+func cmdUncheck(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser uncheck <selector>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if err := tools.Uncheck(page, args[0]); err != nil {
+		Fatal("%v", err)
+	}
+}
+
+func cmdScrollIntoView(args []string) {
+	if len(args) < 1 {
+		Fatal("usage: browser scrollintoview <selector>")
+	}
+	ctx := core.NewContext()
+	_, _, page, err := core.WithPage(ctx)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	if err := tools.ScrollIntoView(page, args[0]); err != nil {
 		Fatal("%v", err)
 	}
 }

@@ -26,8 +26,8 @@ browser click 'input[name="email"]'
 browser input 'input[name="email"]' 'user@example.com'
 browser input 'input[name="password"]' 'secret123'
 browser click 'button[type="submit"]'
-browser waitload
-browser title
+browser wait-load
+browser get title
 ```
 
 ## Command Chaining
@@ -36,13 +36,13 @@ Commands can be chained with `&&` in a single shell invocation. The browser pers
 
 ```bash
 # Navigate and verify
-browser open https://example.com && browser waitload && browser title
+browser open https://example.com && browser wait-load && browser get title
 
 # Fill a form
 browser input '#email' 'user@example.com' && browser input '#pass' 'secret' && browser click '#submit'
 
 # Navigate and capture
-browser open https://example.com && browser waitload && browser screenshot page.png
+browser open https://example.com && browser wait-load && browser screenshot page.png
 ```
 
 **When to chain:** Use `&&` when you don't need intermediate output. Run commands separately when you need to parse output first (e.g., `ax-tree` to discover elements, then interact).
@@ -68,29 +68,46 @@ browser reload                     # Reload page
 browser reload --hard              # Hard reload (bypass cache)
 
 # Page Info
-browser url                        # Print current URL
-browser title                      # Print page title
-browser html                       # Print full page HTML
-browser html <selector>            # Print element's outer HTML
-browser text <selector>            # Print element's visible text
-browser attr <selector> <name>     # Print element attribute value
+browser get url                    # Print current URL
+browser get title                  # Print page title
+browser get html                   # Print full page HTML
+browser get html <selector>        # Print element's outer HTML
+browser get text <selector>        # Print element's visible text
+browser get attr <selector> <name> # Print element attribute value
+browser get value <selector>       # Print input element value
+browser get box <selector>         # Print bounding box {x, y, width, height}
+browser get styles <sel> [prop...] # Print computed styles (all or specific)
 
 # Interaction (CSS selectors)
 browser click <selector>           # Click element
-browser input <selector> <text>    # Clear and type text
+browser dblclick <selector>        # Double-click element
+browser rightclick <selector>      # Right-click element
+browser input <selector> <text>    # Clear and type text (replace contents)
+browser type <selector> <text>     # Type text without clearing (append)
+browser press <key>                # Press key combo (Enter, Control+a, Shift+Tab)
 browser clear <selector>           # Clear input field
 browser select <selector> <value>  # Select dropdown option by value
 browser submit <selector>          # Submit form
 browser hover <selector>           # Hover over element
 browser focus <selector>           # Focus element
+browser check <selector>           # Check checkbox
+browser uncheck <selector>         # Uncheck checkbox
+browser scrollintoview <selector>  # Scroll element into viewport
 
 # Interaction (x,y coordinates)
 browser click <x> <y>              # Click at coordinates
-browser input <x> <y> <text>       # Click at coords then type
+browser dblclick <x> <y>           # Double-click at coordinates
+browser rightclick <x> <y>         # Right-click at coordinates
+browser input <x> <y> <text>       # Click at coords, clear, then type
+browser type <x> <y> <text>        # Click at coords then type (no clear)
 browser hover <x> <y>              # Hover at coordinates
 browser scroll <x> <y> <delta>     # Scroll at coordinates
 browser drag <x1> <y1> <x2> <y2>  # Drag from point to point
 browser element-at <x> <y>         # Describe element at coordinates
+
+# Keyboard (no selector — acts on focused element)
+browser keyboard type <text>       # Type with real keystrokes
+browser keyboard inserttext <text> # Insert text without key events
 
 # File Operations
 browser file <selector> <path|->   # Upload file (- for stdin)
@@ -99,22 +116,23 @@ browser download <selector> -      # Download to stdout
 
 # Waiting
 browser wait <selector>            # Wait for element to be visible
-browser waitload                   # Wait for page load event
-browser waitstable                 # Wait for DOM stability
-browser waitidle                   # Wait for idle callback
+browser wait-load                  # Wait for page load event
+browser wait-stable                # Wait for DOM stability
+browser wait-idle                  # Wait for idle callback
 browser sleep <seconds>            # Sleep for duration
 
-# Screenshots
+# Output
 browser screenshot                 # Auto-named screenshot.png
 browser screenshot file.png        # Save to specific file
 browser screenshot -w 1920 -h 1080 file.png  # Custom viewport
 browser screenshot -h 720 file.png # Clip to viewport height (no full page)
+browser pdf <path>                 # Save page as PDF
 
 # Tabs
-browser pages                      # List all open pages
-browser page <index>               # Switch to page by index
-browser newpage [url]              # Open new page/tab
-browser closepage [index]          # Close page by index
+browser tabs                       # List all open tabs
+browser switch <index>             # Switch to tab by index
+browser new-tab [url]              # Open new tab
+browser close-tab [index]          # Close tab
 
 # Checks (exit 0 = pass, exit 1 = fail)
 browser exists <selector>          # Check element exists
@@ -124,7 +142,7 @@ browser assert <js-expr>           # Assert JS expression is truthy
 browser assert <js-expr> <expected>  # Assert JS result equals expected
 
 # JavaScript
-browser js <expression>            # Evaluate JS and print result
+browser eval <expression>          # Evaluate JS and print result
 
 # Accessibility
 browser ax-tree                    # Print full accessibility tree
@@ -158,8 +176,8 @@ browser input 'input[name="name"]' 'Jane Doe'
 browser input 'input[name="email"]' 'jane@example.com'
 browser select '#country' 'US'
 browser click 'button[type="submit"]'
-browser waitload
-browser title
+browser wait-load
+browser get title
 ```
 
 ### Coordinate-Based Interaction
@@ -181,10 +199,10 @@ browser drag 100 100 400 400      # Drag from (100,100) to (400,400)
 
 ```bash
 browser open https://example.com/products
-browser text 'h1'                 # Get heading text
-browser attr 'a.product' 'href'   # Get link URL
-browser js 'document.querySelectorAll(".price").length'
-browser js 'JSON.stringify(Array.from(document.querySelectorAll(".item")).map(e => e.textContent))'
+browser get text 'h1'              # Get heading text
+browser get attr 'a.product' 'href'  # Get link URL
+browser eval 'document.querySelectorAll(".price").length'
+browser eval 'JSON.stringify(Array.from(document.querySelectorAll(".item")).map(e => e.textContent))'
 ```
 
 ### Accessibility-Driven Interaction
@@ -210,16 +228,16 @@ browser ax-node 'button#save'       # Get a11y info for specific element
 ### Tab Management
 
 ```bash
-browser newpage https://site-a.com
-browser newpage https://site-b.com
-browser pages
+browser new-tab https://site-a.com
+browser new-tab https://site-b.com
+browser tabs
 # * [0] about:blank - about:blank
 #   [1] Site A - https://site-a.com
 #   [2] Site B - https://site-b.com
 
-browser page 1                     # Switch to Site A
-browser title                      # "Site A"
-browser closepage 0                # Close the blank tab
+browser switch 1                   # Switch to Site A
+browser get title                  # "Site A"
+browser close-tab 0                # Close the blank tab
 ```
 
 ### Assertions and Testing
@@ -252,7 +270,7 @@ browser connect https://<uuid>.cdp0.browser-use.com
 # Use normal commands — they work identically on local and cloud browsers
 browser open https://example.com
 browser screenshot page.png
-browser title
+browser get title
 
 # Stop cloud browser (browser stop auto-detects cloud URLs)
 browser stop
@@ -306,14 +324,14 @@ browser connect 1                  # Switch to second browser
 
 ## JavaScript Evaluation
 
-The `js` command auto-wraps expressions in `() => { return (expr); }`, so you can write concise expressions:
+The `eval` command auto-wraps expressions in `() => { return (expr); }`, so you can write concise expressions:
 
 ```bash
-browser js 'document.title'                    # String printed unquoted
-browser js '2 + 2'                             # Number printed raw
-browser js 'document.querySelectorAll("a").length'
-browser js 'location.href'
-browser js 'JSON.stringify({url: location.href, title: document.title})'
+browser eval 'document.title'                    # String printed unquoted
+browser eval '2 + 2'                             # Number printed raw
+browser eval 'document.querySelectorAll("a").length'
+browser eval 'location.href'
+browser eval 'JSON.stringify({url: location.href, title: document.title})'
 ```
 
 Output formatting: strings are printed unquoted, numbers/booleans are raw, objects/arrays are pretty-printed as JSON.

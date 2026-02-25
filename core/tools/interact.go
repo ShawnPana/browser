@@ -180,6 +180,101 @@ func Drag(page *rod.Page, x1, y1, x2, y2 float64, steps int) error {
 	return page.Mouse.Up(proto.InputMouseButtonLeft, 1)
 }
 
+func TypeSelector(page *rod.Page, selector, text string) error {
+	el, err := page.Element(selector)
+	if err != nil {
+		return err
+	}
+	if err := el.Click(proto.InputMouseButtonLeft, 1); err != nil {
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	return page.InsertText(text)
+}
+
+func TypeCoordsImpl(page *rod.Page, x, y float64, text string) error {
+	if err := ClickCoords(page, x, y); err != nil {
+		return err
+	}
+	return page.InsertText(text)
+}
+
+func DblClickSelector(page *rod.Page, selector string) error {
+	el, err := page.Element(selector)
+	if err != nil {
+		return err
+	}
+	if err := el.Click(proto.InputMouseButtonLeft, 2); err != nil {
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	return nil
+}
+
+func DblClickCoords(page *rod.Page, x, y float64) error {
+	if err := page.Mouse.MoveTo(proto.Point{X: x, Y: y}); err != nil {
+		return err
+	}
+	if err := page.Mouse.Click(proto.InputMouseButtonLeft, 2); err != nil {
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	return nil
+}
+
+func RightClickSelector(page *rod.Page, selector string) error {
+	el, err := page.Element(selector)
+	if err != nil {
+		return err
+	}
+	if err := el.Click(proto.InputMouseButtonRight, 1); err != nil {
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	return nil
+}
+
+func RightClickCoords(page *rod.Page, x, y float64) error {
+	if err := page.Mouse.MoveTo(proto.Point{X: x, Y: y}); err != nil {
+		return err
+	}
+	if err := page.Mouse.Click(proto.InputMouseButtonRight, 1); err != nil {
+		return err
+	}
+	time.Sleep(100 * time.Millisecond)
+	return nil
+}
+
+func Check(page *rod.Page, selector string) error {
+	js := fmt.Sprintf(`() => {
+		const el = document.querySelector(%q);
+		if (!el) throw new Error('element not found: %s');
+		el.checked = true;
+		el.dispatchEvent(new Event('change', {bubbles: true}));
+	}`, selector, selector)
+	_, err := page.Eval(js)
+	return err
+}
+
+func Uncheck(page *rod.Page, selector string) error {
+	js := fmt.Sprintf(`() => {
+		const el = document.querySelector(%q);
+		if (!el) throw new Error('element not found: %s');
+		el.checked = false;
+		el.dispatchEvent(new Event('change', {bubbles: true}));
+	}`, selector, selector)
+	_, err := page.Eval(js)
+	return err
+}
+
+func ScrollIntoView(page *rod.Page, selector string) error {
+	el, err := page.Element(selector)
+	if err != nil {
+		return err
+	}
+	return el.ScrollIntoView()
+}
+
 func ElementAt(page *rod.Page, x, y int) (*proto.DOMDescribeNodeResult, error) {
 	nodeRes, err := proto.DOMGetNodeForLocation{X: x, Y: y}.Call(page)
 	if err != nil {
