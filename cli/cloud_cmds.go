@@ -66,7 +66,7 @@ func cloudREST(args []string) {
 	ctx := core.NewContext()
 	cfg := core.LoadCloudConfig(ctx)
 	if cfg.APIKey == "" {
-		Fatal("no API key configured (use 'browser cloud login <key>' or set BROWSER_USE_API_KEY)")
+		Fatal("no API key configured\n\n  browser cloud login <key>\n\nOr set BROWSER_USE_API_KEY. Get a key at https://cloud.browser-use.com/dashboard/settings?tab=api-keys&new")
 	}
 
 	url := core.CloudBaseURL + path
@@ -118,7 +118,7 @@ func cloudPoll(args []string) {
 	ctx := core.NewContext()
 	cfg := core.LoadCloudConfig(ctx)
 	if cfg.APIKey == "" {
-		Fatal("no API key configured")
+		Fatal("no API key configured\n\n  browser cloud login <key>\n\nOr set BROWSER_USE_API_KEY. Get a key at https://cloud.browser-use.com/dashboard/settings?tab=api-keys&new")
 	}
 
 	url := core.CloudBaseURL + "/tasks/" + taskID

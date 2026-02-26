@@ -61,5 +61,17 @@ func findChrome() (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("Chrome not found. Install Chrome or Chromium, or set BROWSER_CHROME_BIN.")
+	return "", fmt.Errorf(`Chromium not found. To install, run:
+
+  uvx browser-use install
+
+Requires Python 3.11+ and uv (https://docs.astral.sh/uv/).
+
+Alternatively, use a cloud browser:
+
+  browser cloud login <api-key>
+  browser cloud POST /browsers '{"headless":true}'
+  browser connect <cdp-url>
+
+Get an API key at https://cloud.browser-use.com/dashboard/settings?tab=api-keys&new`)
 }
