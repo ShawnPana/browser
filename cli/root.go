@@ -210,8 +210,8 @@ Waiting:
   sleep <seconds>            Sleep for duration
 
 Output:
-  screenshot [-w N] [-h N] [file]  Capture screenshot
-  pdf <path>                       Save page as PDF
+  screenshot [-w N] [-h N] [file]  Capture screenshot (default: ~/.browser/tmp/)
+  pdf <path>                       Save page as PDF (default: ~/.browser/tmp/)
 
 Tabs:
   tabs                       List open tabs
@@ -238,7 +238,7 @@ Cloud:
   cloud --help               Show API endpoints
 
 Environment:
-  BROWSER_HOME        State directory (default: ~/.browser)
+  BROWSER_HOME        State directory (default: ~/.browser); also controls output dir ($BROWSER_HOME/tmp/)
   ROD_TIMEOUT         Command timeout in seconds (default: 30)
   ROD_CHROME_BIN      Chrome binary path
   BROWSER_USE_API_KEY Cloud API key

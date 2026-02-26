@@ -42,7 +42,7 @@ browser open https://example.com && browser wait-load && browser get title
 browser input '#email' 'user@example.com' && browser input '#pass' 'secret' && browser click '#submit'
 
 # Navigate and capture
-browser open https://example.com && browser wait-load && browser screenshot page.png
+browser open https://example.com && browser wait-load && browser screenshot page.png  # → ~/.browser/tmp/page.png
 ```
 
 **When to chain:** Use `&&` when you don't need intermediate output. Run commands separately when you need to parse output first (e.g., `ax-tree` to discover elements, then interact).
@@ -111,7 +111,7 @@ browser keyboard inserttext <text> # Insert text without key events
 
 # File Operations
 browser file <selector> <path|->   # Upload file (- for stdin)
-browser download <selector> [file] # Download linked resource
+browser download <selector> [file] # Download linked resource (default: ~/.browser/tmp/)
 browser download <selector> -      # Download to stdout
 
 # Waiting
@@ -121,11 +121,12 @@ browser wait-stable                # Wait for DOM stability
 browser wait-idle                  # Wait for idle callback
 browser sleep <seconds>            # Sleep for duration
 
-# Output
-browser screenshot                 # Screenshot current viewport
-browser screenshot file.png        # Save to specific file
-browser screenshot --full file.png # Full scrollable page
-browser pdf <path>                 # Save page as PDF
+# Output (bare filenames default to ~/.browser/tmp/; use ./ or / for explicit paths)
+browser screenshot                 # → ~/.browser/tmp/screenshot.png
+browser screenshot file.png        # → ~/.browser/tmp/file.png
+browser screenshot ./file.png      # → ./file.png (explicit path)
+browser screenshot --full file.png # Full page → ~/.browser/tmp/file.png
+browser pdf page.pdf               # → ~/.browser/tmp/page.pdf
 
 # Tabs
 browser tabs                       # List all open tabs
@@ -187,7 +188,7 @@ browser get title
 When CSS selectors are unreliable (e.g., canvas apps, complex SPAs), use coordinates. Take a screenshot first to identify positions:
 
 ```bash
-browser screenshot current.png
+browser screenshot current.png    # → ~/.browser/tmp/current.png
 # View the screenshot to identify coordinates
 
 browser click 450 320
@@ -271,7 +272,7 @@ browser connect https://<uuid>.cdp0.browser-use.com
 
 # Use normal commands — they work identically on local and cloud browsers
 browser open https://example.com
-browser screenshot page.png
+browser screenshot page.png   # → ~/.browser/tmp/page.png
 browser get title
 
 # Stop cloud browser (browser stop auto-detects cloud URLs)
@@ -342,7 +343,7 @@ Output formatting: strings are printed unquoted, numbers/booleans are raw, objec
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `BROWSER_HOME` | State directory | `~/.browser` |
+| `BROWSER_HOME` | State directory (also controls output dir: `$BROWSER_HOME/tmp/`) | `~/.browser` |
 | `ROD_TIMEOUT` | Command timeout in seconds | `30` |
 | `ROD_CHROME_BIN` | Chrome binary path | auto-detect |
 | `BROWSER_USE_API_KEY` | Cloud API key | none |
@@ -354,5 +355,6 @@ The browser runs as a separate process that survives CLI exit. State is stored i
 - **Browser registry**: Multiple browsers can be tracked, one is active
 - **Active page**: Which tab is currently targeted
 - **Data dir**: Chrome user data directory for local browsers
+- **Output dir**: Screenshots, PDFs, and downloads default to `~/.browser/tmp/`
 
 Always `browser stop` when done to clean up. Use `browser status` to check what's running.

@@ -3,6 +3,7 @@ package tools
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
@@ -46,7 +47,7 @@ func Screenshot(page *rod.Page, opts ScreenshotOptions) (string, error) {
 
 	filename := opts.File
 	if filename == "" {
-		filename = autoScreenshotName()
+		filename = AutoScreenshotName(".")
 	}
 
 	if err := os.WriteFile(filename, data, 0644); err != nil {
@@ -56,13 +57,14 @@ func Screenshot(page *rod.Page, opts ScreenshotOptions) (string, error) {
 	return filename, nil
 }
 
-func autoScreenshotName() string {
-	name := "screenshot.png"
+func AutoScreenshotName(dir string) string {
+	os.MkdirAll(dir, 0755)
+	name := filepath.Join(dir, "screenshot.png")
 	if _, err := os.Stat(name); os.IsNotExist(err) {
 		return name
 	}
 	for i := 2; ; i++ {
-		name = fmt.Sprintf("screenshot-%d.png", i)
+		name = filepath.Join(dir, fmt.Sprintf("screenshot-%d.png", i))
 		if _, err := os.Stat(name); os.IsNotExist(err) {
 			return name
 		}

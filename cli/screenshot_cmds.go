@@ -22,6 +22,13 @@ func cmdScreenshot(args []string) {
 	}
 
 	ctx := core.NewContext()
+
+	if file == "" {
+		file = tools.AutoScreenshotName(ctx.OutputDir())
+	} else {
+		file = ctx.ResolveOutputPath(file)
+	}
+
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)

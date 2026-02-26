@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 func cmdPDF(args []string) {
@@ -23,7 +24,9 @@ func cmdPDF(args []string) {
 		Fatal("%v", err)
 	}
 
-	outPath := args[0]
+	outPath := ctx.ResolveOutputPath(args[0])
+	os.MkdirAll(filepath.Dir(outPath), 0755)
+
 	f, err := os.Create(outPath)
 	if err != nil {
 		Fatal("failed to create file: %v", err)

@@ -2,6 +2,7 @@ package core
 
 import (
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 )
@@ -49,7 +50,7 @@ func SaveState(ctx *Context, s *State) error {
 }
 
 func RemoveState(ctx *Context) error {
-	return os.Remove(statePath(ctx))
+	return errors.Join(os.RemoveAll(ctx.OutputDir()), os.Remove(statePath(ctx)))
 }
 
 // AddBrowser adds a browser to the registry and sets it as active.

@@ -5,6 +5,7 @@ import (
 	"browser/core/tools"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -201,6 +202,9 @@ func cmdDownload(args []string) {
 	if outFile == "" {
 		outFile = filename
 	}
+
+	outFile = ctx.ResolveOutputPath(outFile)
+	os.MkdirAll(filepath.Dir(outFile), 0755)
 
 	if err := os.WriteFile(outFile, data, 0644); err != nil {
 		Fatal("failed to write file: %v", err)

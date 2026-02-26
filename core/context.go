@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -19,6 +20,17 @@ func NewContext() *Context {
 		StateDir: stateDir(),
 		Timeout:  timeout(),
 	}
+}
+
+func (c *Context) OutputDir() string {
+	return filepath.Join(c.StateDir, "tmp")
+}
+
+func (c *Context) ResolveOutputPath(name string) string {
+	if strings.ContainsRune(name, filepath.Separator) || strings.ContainsRune(name, '/') {
+		return name
+	}
+	return filepath.Join(c.OutputDir(), name)
 }
 
 func stateDir() string {

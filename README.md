@@ -36,7 +36,7 @@ browser ax-tree --depth 3
 # Interact
 browser click 'a[href="/more"]'
 browser input '#search' 'hello world'
-browser screenshot result.png
+browser screenshot result.png   # saves to ~/.browser/tmp/result.png; use ./result.png for CWD
 
 # Clean up
 browser stop
@@ -57,7 +57,7 @@ browser stop
 | `browser connect <index>` | Switch active browser by registry index |
 | `browser status` | Show all registered browsers with liveness |
 
-The browser persists as a background process across CLI invocations. State is stored in `~/.browser/state.json`. Multiple browsers can be registered simultaneously — one is active at a time.
+The browser persists as a background process across CLI invocations. State is stored in `~/.browser/state.json`, and output files (screenshots, PDFs, downloads) default to `~/.browser/tmp/`. Multiple browsers can be registered simultaneously — one is active at a time.
 
 ### Navigation
 
@@ -174,12 +174,16 @@ browser download 'a.download-link' ./output.pdf
 
 ### Output
 
+Bare filenames default to `~/.browser/tmp/`. Use an explicit path (`./`, `../`, `/`) to write elsewhere.
+
 ```bash
-browser screenshot                          # → screenshot.png (auto-named)
-browser screenshot page.png                 # → page.png
+browser screenshot                          # → ~/.browser/tmp/screenshot.png (auto-named)
+browser screenshot page.png                 # → ~/.browser/tmp/page.png
+browser screenshot ./page.png               # → ./page.png (explicit path)
 browser screenshot -w 1920 file.png         # Custom width, full-page height
 browser screenshot -w 1920 -h 1080 file.png # Fixed viewport clip
-browser pdf page.pdf                        # Save page as PDF
+browser pdf page.pdf                        # → ~/.browser/tmp/page.pdf
+browser pdf ./page.pdf                      # → ./page.pdf (explicit path)
 ```
 
 When `-h` is specified, the screenshot clips to the viewport height. Without it, the full scrollable page is captured.
@@ -271,7 +275,7 @@ browser connect https://<uuid>.cdp0.browser-use.com
 
 # All commands work identically on cloud browsers
 browser open https://example.com
-browser screenshot page.png
+browser screenshot page.png   # → ~/.browser/tmp/page.png
 
 # Stop auto-detects cloud URLs and calls the API
 browser stop
@@ -293,7 +297,7 @@ browser cloud poll <task-id>
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `BROWSER_HOME` | State directory | `~/.browser` |
+| `BROWSER_HOME` | State directory (also controls output dir: `$BROWSER_HOME/tmp/`) | `~/.browser` |
 | `ROD_TIMEOUT` | Command timeout in seconds | `30` |
 | `ROD_CHROME_BIN` | Chrome binary path | auto-detect |
 | `BROWSER_USE_API_KEY` | Cloud API key (alternative to `cloud login`) | none |
