@@ -54,16 +54,17 @@ func LoadRefMap(ctx *Context) (map[int]string, error) {
 	return refs, nil
 }
 
-// ResolveSelector resolves a selector that may be a @ref (e.g. "@1") into
-// a CSS selector by looking up refs.json. Non-ref selectors are returned as-is.
+// ResolveSelector resolves a ref (e.g. "i1") into a CSS selector by looking
+// up refs.json. Non-ref selectors are returned as-is.
 func ResolveSelector(ctx *Context, selector string) (string, error) {
-	if !strings.HasPrefix(selector, "@") {
+	if !strings.HasPrefix(selector, "i") {
 		return selector, nil
 	}
 	numStr := selector[1:]
 	num, err := strconv.Atoi(numStr)
 	if err != nil {
-		return "", fmt.Errorf("invalid ref %q: must be @<number>", selector)
+		// Not a ref (e.g. "input"), return as-is
+		return selector, nil
 	}
 	refs, err := LoadRefMap(ctx)
 	if err != nil {

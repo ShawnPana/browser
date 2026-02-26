@@ -73,7 +73,7 @@ type TabInfo struct {
 	URL   string
 }
 
-// resolveSelector resolves a @ref selector to a CSS selector, or returns
+// resolveSelector resolves a ref (e.g. "i1") to a CSS selector, or returns
 // the selector unchanged if it's not a ref.
 func resolveSelector(ctx *core.Context, sel string) string {
 	resolved, err := core.ResolveSelector(ctx, sel)

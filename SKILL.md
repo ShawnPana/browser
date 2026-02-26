@@ -142,12 +142,12 @@ browser assert <js-expr>           # Assert JS expression is truthy
 browser assert <js-expr> <expected>  # Assert JS result equals expected
 
 # Accessibility
-browser ax-tree                    # Print accessibility tree with @refs on interactive elements
+browser ax-tree                    # Print accessibility tree with refs on interactive elements
 browser ax-tree --depth 3          # Limit tree depth
 browser ax-tree --json             # Output as JSON (includes ref field)
 browser ax-tree --with-coords      # Include CSS pixel coordinates per element
 browser ax-tree --selectors        # Include CSS selectors per element
-browser ax-tree --no-refs          # Suppress @ref annotations
+browser ax-tree --no-refs          # Suppress ref annotations
 browser ax-find --name "Submit"    # Find nodes by accessible name
 browser ax-find --role button      # Find nodes by ARIA role
 browser ax-node <selector>         # Get accessibility info for element
@@ -207,7 +207,7 @@ browser eval 'JSON.stringify(Array.from(document.querySelectorAll(".item")).map(
 
 ### Ref-Based Interaction (Recommended)
 
-Use `ax-tree` to inspect the page — interactive elements get short `@ref` numbers you can use directly in commands:
+Use `ax-tree` to inspect the page — interactive elements get short refs you can use directly in commands:
 
 ```bash
 browser open https://example.com
@@ -215,14 +215,14 @@ browser ax-tree --depth 4
 # Output:
 # [RootWebArea] "Example" (url=https://example.com)
 #   [navigation] "Main"
-#     [@1] [link] "Home" (focusable=true)
-#     [@2] [link] "About" (focusable=true)
+#     [i1] [link] "Home" (focusable=true)
+#     [i2] [link] "About" (focusable=true)
 #   [main] ""
-#     [@3] [heading] "Welcome" (level=1)
+#     [i3] [heading] "Welcome" (level=1)
 
 # Click using the ref instead of a CSS selector
-browser click @2                    # Clicks the "About" link
-browser get text @3                 # Gets text of the heading
+browser click i2                    # Clicks the "About" link
+browser get text i3                 # Gets text of the heading
 ```
 
 Refs are assigned to interactive elements (links, buttons, inputs, etc.) and named content elements (headings, list items). They're refreshed every time `ax-tree` runs.

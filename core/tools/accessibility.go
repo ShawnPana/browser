@@ -416,7 +416,7 @@ func FormatAXTree(nodes []AXNode, indent int) string {
 		}
 		ref := ""
 		if n.Ref > 0 {
-			ref = fmt.Sprintf("[@%d] ", n.Ref)
+			ref = fmt.Sprintf("[i%d] ", n.Ref)
 		}
 		fmt.Fprintf(&b, "%s%s[%s] %q%s%s%s\n", prefix, ref, n.Role, n.Name, props, coords, sel)
 		if len(n.Children) > 0 {
