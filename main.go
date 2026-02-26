@@ -1,6 +1,6 @@
 package main
 
-import "browser/cli"
+import "github.com/ShawnPana/browser/cli"
 
 func main() {
 	cli.Execute()

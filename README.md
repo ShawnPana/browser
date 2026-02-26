@@ -6,14 +6,29 @@ Launch a headless Chrome, then drive it entirely from the command line — navig
 
 ## Install
 
+### macOS / Linux / WSL
 ```bash
-go install browser@latest
+curl -fsSL https://raw.githubusercontent.com/ShawnPana/browser/main/install.sh | sh
 ```
 
-Or build from source:
+### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/ShawnPana/browser/main/install.ps1 | iex
+```
 
+### Windows (CMD)
+```cmd
+powershell -c "irm https://raw.githubusercontent.com/ShawnPana/browser/main/install.ps1 | iex"
+```
+
+### Go install
 ```bash
-git clone https://github.com/user/browser.git
+go install github.com/ShawnPana/browser@latest
+```
+
+### Build from source
+```bash
+git clone https://github.com/ShawnPana/browser.git
 cd browser
 go build -o browser .
 ```

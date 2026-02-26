@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"browser/core/tools"
+	"github.com/ShawnPana/browser/core/tools"
 )
 
 // Fatal prints an error to stderr and exits with code 2.

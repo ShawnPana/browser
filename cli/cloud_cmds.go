@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"browser/core"
+	"github.com/ShawnPana/browser/core"
 	"encoding/json"
 	"fmt"
 	"io"

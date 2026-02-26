@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"browser/core"
-	"browser/core/tools"
+	"github.com/ShawnPana/browser/core"
+	"github.com/ShawnPana/browser/core/tools"
 	"fmt"
 	"os"
 	"path/filepath"
