@@ -1,10 +1,11 @@
 package cli
 
 import (
-	"github.com/ShawnPana/browser/core"
-	"github.com/ShawnPana/browser/core/tools"
 	"encoding/json"
 	"fmt"
+
+	"github.com/ShawnPana/browser/core"
+	"github.com/ShawnPana/browser/core/tools"
 )
 
 func cmdGet(args []string) {
@@ -69,7 +70,7 @@ func cmdHTML(args []string) {
 	}
 	selector := ""
 	if len(args) > 0 {
-		selector = args[0]
+		selector = resolveSelector(ctx, args[0])
 	}
 	h, err := tools.HTML(page, selector)
 	if err != nil {
@@ -87,7 +88,8 @@ func cmdText(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	t, err := tools.Text(page, args[0])
+	sel := resolveSelector(ctx, args[0])
+	t, err := tools.Text(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -103,7 +105,8 @@ func cmdAttr(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	v, err := tools.Attr(page, args[0], args[1])
+	sel := resolveSelector(ctx, args[0])
+	v, err := tools.Attr(page, sel, args[1])
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -119,7 +122,8 @@ func cmdValue(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	v, err := tools.Value(page, args[0])
+	sel := resolveSelector(ctx, args[0])
+	v, err := tools.Value(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -135,7 +139,8 @@ func cmdBox(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	box, err := tools.Box(page, args[0])
+	sel := resolveSelector(ctx, args[0])
+	box, err := tools.Box(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -152,8 +157,9 @@ func cmdStyles(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
+	sel := resolveSelector(ctx, args[0])
 	props := args[1:]
-	result, err := tools.Styles(page, args[0], props)
+	result, err := tools.Styles(page, sel, props)
 	if err != nil {
 		Fatal("%v", err)
 	}

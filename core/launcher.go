@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/go-rod/rod/lib/launcher"
 )
@@ -48,17 +47,15 @@ func Launch(ctx *Context, opts LaunchOptions) (debugURL string, dataDir string, 
 // findChrome resolves the Chrome/Chromium binary path.
 // Resolution order:
 // 1. BROWSER_CHROME_BIN env var
-// 2. exec.LookPath for common binary names
+// 2. rod's launcher.LookPath (cross-platform: macOS app bundles, Linux, Windows, etc.)
 // 3. Error with instructions
 func findChrome() (string, error) {
 	if bin := os.Getenv("BROWSER_CHROME_BIN"); bin != "" {
 		return bin, nil
 	}
 
-	for _, name := range []string{"chromium", "chromium-browser", "google-chrome", "google-chrome-stable"} {
-		if path, err := exec.LookPath(name); err == nil {
-			return path, nil
-		}
+	if path, has := launcher.LookPath(); has {
+		return path, nil
 	}
 
 	return "", fmt.Errorf(`Chromium not found. To install, run:

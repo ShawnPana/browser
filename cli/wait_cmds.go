@@ -1,10 +1,11 @@
 package cli
 
 import (
-	"github.com/ShawnPana/browser/core"
-	"github.com/ShawnPana/browser/core/tools"
 	"strconv"
 	"time"
+
+	"github.com/ShawnPana/browser/core"
+	"github.com/ShawnPana/browser/core/tools"
 )
 
 func cmdWait(args []string) {
@@ -12,11 +13,12 @@ func cmdWait(args []string) {
 		Fatal("usage: browser wait <selector>")
 	}
 	ctx := core.NewContext()
+	sel := resolveSelector(ctx, args[0])
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Wait(page, args[0]); err != nil {
+	if err := tools.Wait(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }

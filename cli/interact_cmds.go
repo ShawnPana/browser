@@ -1,13 +1,14 @@
 package cli
 
 import (
-	"github.com/ShawnPana/browser/core"
-	"github.com/ShawnPana/browser/core/tools"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/ShawnPana/browser/core"
+	"github.com/ShawnPana/browser/core/tools"
 )
 
 func cmdEval(args []string) {
@@ -45,7 +46,8 @@ func cmdClick(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
-		if err := tools.ClickSelector(page, args[0]); err != nil {
+		sel := resolveSelector(ctx, args[0])
+		if err := tools.ClickSelector(page, sel); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -73,8 +75,9 @@ func cmdInput(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
+		sel := resolveSelector(ctx, args[0])
 		text := strings.Join(args[1:], " ")
-		if err := tools.InputSelector(page, args[0], text); err != nil {
+		if err := tools.InputSelector(page, sel, text); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -89,7 +92,8 @@ func cmdClear(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Clear(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Clear(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -103,7 +107,8 @@ func cmdSelect(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Select(page, args[0], args[1]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Select(page, sel, args[1]); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -117,7 +122,8 @@ func cmdSubmit(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Submit(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Submit(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -140,7 +146,8 @@ func cmdHover(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
-		if err := tools.HoverSelector(page, args[0]); err != nil {
+		sel := resolveSelector(ctx, args[0])
+		if err := tools.HoverSelector(page, sel); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -155,7 +162,8 @@ func cmdFocus(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Focus(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Focus(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -169,7 +177,8 @@ func cmdFile(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.FileUpload(page, args[0], args[1]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.FileUpload(page, sel, args[1]); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -184,7 +193,8 @@ func cmdDownload(args []string) {
 		Fatal("%v", err)
 	}
 
-	data, filename, err := tools.Download(page, args[0])
+	sel := resolveSelector(ctx, args[0])
+	data, filename, err := tools.Download(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -238,11 +248,12 @@ func cmdScroll(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
+		sel := resolveSelector(ctx, args[0])
 		delta, err := strconv.ParseFloat(args[len(args)-1], 64)
 		if err != nil {
 			Fatal("invalid delta: %s", args[len(args)-1])
 		}
-		if err := tools.ScrollSelector(page, args[0], delta); err != nil {
+		if err := tools.ScrollSelector(page, sel, delta); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -295,8 +306,9 @@ func cmdType(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
+		sel := resolveSelector(ctx, args[0])
 		text := strings.Join(args[1:], " ")
-		if err := tools.TypeSelector(page, args[0], text); err != nil {
+		if err := tools.TypeSelector(page, sel, text); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -320,7 +332,8 @@ func cmdDblClick(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
-		if err := tools.DblClickSelector(page, args[0]); err != nil {
+		sel := resolveSelector(ctx, args[0])
+		if err := tools.DblClickSelector(page, sel); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -344,7 +357,8 @@ func cmdRightClick(args []string) {
 			Fatal("%v", err)
 		}
 	} else {
-		if err := tools.RightClickSelector(page, args[0]); err != nil {
+		sel := resolveSelector(ctx, args[0])
+		if err := tools.RightClickSelector(page, sel); err != nil {
 			Fatal("%v", err)
 		}
 	}
@@ -374,7 +388,8 @@ func cmdCheck(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Check(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Check(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -388,7 +403,8 @@ func cmdUncheck(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.Uncheck(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.Uncheck(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }
@@ -402,7 +418,8 @@ func cmdScrollIntoView(args []string) {
 	if err != nil {
 		Fatal("%v", err)
 	}
-	if err := tools.ScrollIntoView(page, args[0]); err != nil {
+	sel := resolveSelector(ctx, args[0])
+	if err := tools.ScrollIntoView(page, sel); err != nil {
 		Fatal("%v", err)
 	}
 }

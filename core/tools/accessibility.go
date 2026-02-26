@@ -24,7 +24,76 @@ type AXNode struct {
 	Properties []string `json:"properties,omitempty"`
 	Box        *AXBox   `json:"box,omitempty"`
 	Selector   string   `json:"selector,omitempty"`
+	Ref        int      `json:"ref,omitempty"`
 	Children   []AXNode `json:"children,omitempty"`
+}
+
+// RefMap maps ref numbers to CSS selectors.
+type RefMap map[int]string
+
+// interactiveRoles are roles that always get a ref when they have a selector.
+var interactiveRoles = map[string]bool{
+	"button":            true,
+	"link":              true,
+	"textbox":           true,
+	"checkbox":          true,
+	"radio":             true,
+	"combobox":          true,
+	"listbox":           true,
+	"menuitem":          true,
+	"menuitemcheckbox":  true,
+	"menuitemradio":     true,
+	"option":            true,
+	"searchbox":         true,
+	"slider":            true,
+	"spinbutton":        true,
+	"switch":            true,
+	"tab":               true,
+	"treeitem":          true,
+}
+
+// contentRoles get a ref only when they have a non-empty name.
+var contentRoles = map[string]bool{
+	"heading":      true,
+	"cell":         true,
+	"gridcell":     true,
+	"columnheader": true,
+	"rowheader":    true,
+	"listitem":     true,
+}
+
+// AssignRefs walks the tree and assigns sequential ref numbers to interactive
+// nodes that have a selector. Returns a RefMap mapping ref → CSS selector.
+func AssignRefs(nodes []AXNode) RefMap {
+	refs := make(RefMap)
+	counter := 0
+	assignRefsRecursive(nodes, refs, &counter)
+	return refs
+}
+
+func assignRefsRecursive(nodes []AXNode, refs RefMap, counter *int) {
+	for i := range nodes {
+		n := &nodes[i]
+		if n.Selector != "" && shouldGetRef(n) {
+			*counter++
+			n.Ref = *counter
+			refs[*counter] = n.Selector
+		}
+		if len(n.Children) > 0 {
+			assignRefsRecursive(n.Children, refs, counter)
+		}
+	}
+}
+
+func shouldGetRef(n *AXNode) bool {
+	role := strings.ToLower(n.Role)
+	if interactiveRoles[role] {
+		return true
+	}
+	if contentRoles[role] && n.Name != "" {
+		return true
+	}
+	return false
 }
 
 func AXTree(page *rod.Page, maxDepth int, withCoords bool, withSelectors bool) ([]AXNode, error) {
@@ -323,7 +392,8 @@ func buildSelectorFromSnapshot(nodeIdx int, nodes *proto.DOMSnapshotNodeTreeSnap
 		return tag + `[type="` + typ + `"]`
 	}
 
-	return ""
+	// Bare tag as last resort (a, h1, button, etc.)
+	return tag
 }
 
 func FormatAXTree(nodes []AXNode, indent int) string {
@@ -344,7 +414,11 @@ func FormatAXTree(nodes []AXNode, indent int) string {
 		if n.Selector != "" {
 			sel = fmt.Sprintf(" {%s}", n.Selector)
 		}
-		fmt.Fprintf(&b, "%s[%s] %q%s%s%s\n", prefix, n.Role, n.Name, props, coords, sel)
+		ref := ""
+		if n.Ref > 0 {
+			ref = fmt.Sprintf("[@%d] ", n.Ref)
+		}
+		fmt.Fprintf(&b, "%s%s[%s] %q%s%s%s\n", prefix, ref, n.Role, n.Name, props, coords, sel)
 		if len(n.Children) > 0 {
 			b.WriteString(FormatAXTree(n.Children, indent+1))
 		}

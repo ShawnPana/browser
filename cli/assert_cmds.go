@@ -1,9 +1,10 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/ShawnPana/browser/core"
 	"github.com/ShawnPana/browser/core/tools"
-	"fmt"
 )
 
 func cmdExists(args []string) {
@@ -11,11 +12,12 @@ func cmdExists(args []string) {
 		Fatal("usage: browser exists <selector>")
 	}
 	ctx := core.NewContext()
+	sel := resolveSelector(ctx, args[0])
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
-	exists, err := tools.Exists(page, args[0])
+	exists, err := tools.Exists(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -30,11 +32,12 @@ func cmdCount(args []string) {
 		Fatal("usage: browser count <selector>")
 	}
 	ctx := core.NewContext()
+	sel := resolveSelector(ctx, args[0])
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
-	count, err := tools.Count(page, args[0])
+	count, err := tools.Count(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}
@@ -46,11 +49,12 @@ func cmdVisible(args []string) {
 		Fatal("usage: browser visible <selector>")
 	}
 	ctx := core.NewContext()
+	sel := resolveSelector(ctx, args[0])
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)
 	}
-	vis, err := tools.Visible(page, args[0])
+	vis, err := tools.Visible(page, sel)
 	if err != nil {
 		Fatal("%v", err)
 	}

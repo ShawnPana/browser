@@ -1,11 +1,12 @@
 package cli
 
 import (
-	"github.com/ShawnPana/browser/core"
-	"github.com/ShawnPana/browser/core/tools"
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"github.com/ShawnPana/browser/core"
+	"github.com/ShawnPana/browser/core/tools"
 )
 
 func cmdAXTree(args []string) {
@@ -13,6 +14,7 @@ func cmdAXTree(args []string) {
 	asJSON := false
 	withCoords := false
 	withSelectors := false
+	noRefs := false
 
 	i := 0
 	for i < len(args) {
@@ -33,6 +35,8 @@ func cmdAXTree(args []string) {
 			withCoords = true
 		case "--selectors":
 			withSelectors = true
+		case "--no-refs":
+			noRefs = true
 		}
 		i++
 	}
@@ -43,9 +47,24 @@ func cmdAXTree(args []string) {
 		Fatal("%v", err)
 	}
 
-	nodes, err := tools.AXTree(page, depth, withCoords, withSelectors)
+	// Always resolve selectors internally (needed for refs).
+	// The --selectors flag controls whether selectors are displayed.
+	nodes, err := tools.AXTree(page, depth, withCoords, true)
 	if err != nil {
 		Fatal("%v", err)
+	}
+
+	// Assign refs and persist them (unless --no-refs)
+	if !noRefs {
+		refs := tools.AssignRefs(nodes)
+		if err := core.SaveRefMap(ctx, refs); err != nil {
+			Fatal("failed to save refs: %v", err)
+		}
+	}
+
+	// Strip selectors from output if --selectors was not requested
+	if !withSelectors {
+		stripSelectors(nodes)
 	}
 
 	if asJSON {
@@ -58,6 +77,19 @@ func cmdAXTree(args []string) {
 		fmt.Print(tools.FormatAXTree(nodes, 0))
 	}
 }
+
+// stripSelectors removes the Selector field from all nodes so it doesn't
+// appear in output (text or JSON) when --selectors is not requested.
+func stripSelectors(nodes []AXNode) {
+	for i := range nodes {
+		nodes[i].Selector = ""
+		if len(nodes[i].Children) > 0 {
+			stripSelectors(nodes[i].Children)
+		}
+	}
+}
+
+type AXNode = tools.AXNode
 
 func cmdAXFind(args []string) {
 	name := ""
@@ -116,7 +148,8 @@ func cmdAXNode(args []string) {
 		Fatal("usage: browser ax-node <selector> [--json]")
 	}
 
-	selector := args[0]
+	ctx := core.NewContext()
+	selector := resolveSelector(ctx, args[0])
 	asJSON := false
 	for _, a := range args[1:] {
 		if a == "--json" {
@@ -124,7 +157,6 @@ func cmdAXNode(args []string) {
 		}
 	}
 
-	ctx := core.NewContext()
 	_, _, page, err := core.WithPage(ctx)
 	if err != nil {
 		Fatal("%v", err)

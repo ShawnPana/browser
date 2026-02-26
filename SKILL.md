@@ -142,12 +142,12 @@ browser assert <js-expr>           # Assert JS expression is truthy
 browser assert <js-expr> <expected>  # Assert JS result equals expected
 
 # Accessibility
-browser ax-tree                    # Print full accessibility tree
+browser ax-tree                    # Print accessibility tree with @refs on interactive elements
 browser ax-tree --depth 3          # Limit tree depth
-browser ax-tree --json             # Output as JSON
+browser ax-tree --json             # Output as JSON (includes ref field)
 browser ax-tree --with-coords      # Include CSS pixel coordinates per element
-browser ax-tree --selectors        # Include CSS selectors per element (traverses iframes)
-browser ax-tree --selectors --depth 5  # With selectors and depth limit
+browser ax-tree --selectors        # Include CSS selectors per element
+browser ax-tree --no-refs          # Suppress @ref annotations
 browser ax-find --name "Submit"    # Find nodes by accessible name
 browser ax-find --role button      # Find nodes by ARIA role
 browser ax-node <selector>         # Get accessibility info for element
@@ -205,9 +205,9 @@ browser eval 'document.querySelectorAll(".price").length'
 browser eval 'JSON.stringify(Array.from(document.querySelectorAll(".item")).map(e => e.textContent))'
 ```
 
-### Accessibility-Driven Interaction
+### Ref-Based Interaction (Recommended)
 
-Use the accessibility tree to understand page structure without relying on implementation details:
+Use `ax-tree` to inspect the page — interactive elements get short `@ref` numbers you can use directly in commands:
 
 ```bash
 browser open https://example.com
@@ -215,11 +215,23 @@ browser ax-tree --depth 4
 # Output:
 # [RootWebArea] "Example" (url=https://example.com)
 #   [navigation] "Main"
-#     [link] "Home" (focusable=true)
-#     [link] "About" (focusable=true)
+#     [@1] [link] "Home" (focusable=true)
+#     [@2] [link] "About" (focusable=true)
 #   [main] ""
-#     [heading] "Welcome" (level=1)
+#     [@3] [heading] "Welcome" (level=1)
 
+# Click using the ref instead of a CSS selector
+browser click @2                    # Clicks the "About" link
+browser get text @3                 # Gets text of the heading
+```
+
+Refs are assigned to interactive elements (links, buttons, inputs, etc.) and named content elements (headings, list items). They're refreshed every time `ax-tree` runs.
+
+### Accessibility-Driven Interaction
+
+Use the accessibility tree to understand page structure without relying on implementation details:
+
+```bash
 browser ax-find --role link         # Find all links
 browser ax-find --name "Submit"     # Find elements named "Submit"
 browser ax-node 'button#save'       # Get a11y info for specific element
@@ -341,8 +353,8 @@ Output formatting: strings are printed unquoted, numbers/booleans are raw, objec
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `BROWSER_HOME` | State directory (also controls output dir: `$BROWSER_HOME/tmp/`) | `~/.browser` |
-| `ROD_TIMEOUT` | Command timeout in seconds | `30` |
-| `ROD_CHROME_BIN` | Chrome binary path | auto-detect |
+| `BROWSER_TIMEOUT` | Command timeout in seconds | `30` |
+| `BROWSER_CHROME_BIN` | Chrome binary path | auto-detect |
 | `BROWSER_USE_API_KEY` | Cloud API key | none |
 
 ## Persistent State

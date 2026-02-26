@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/ShawnPana/browser/core"
 	"github.com/ShawnPana/browser/core/tools"
 )
 
@@ -70,4 +71,14 @@ func FormatTabList(pages []TabInfo, activeIndex int) string {
 type TabInfo struct {
 	Title string
 	URL   string
+}
+
+// resolveSelector resolves a @ref selector to a CSS selector, or returns
+// the selector unchanged if it's not a ref.
+func resolveSelector(ctx *core.Context, sel string) string {
+	resolved, err := core.ResolveSelector(ctx, sel)
+	if err != nil {
+		Fatal("%v", err)
+	}
+	return resolved
 }
