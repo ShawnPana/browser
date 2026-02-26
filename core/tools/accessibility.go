@@ -28,10 +28,19 @@ type AXNode struct {
 }
 
 func AXTree(page *rod.Page, maxDepth int, withCoords bool, withSelectors bool) ([]AXNode, error) {
-	return axTreeForFrame(page, "", maxDepth, 0, withCoords, withSelectors)
+	var boxMap map[proto.DOMBackendNodeID]*AXBox
+	var selMap map[proto.DOMBackendNodeID]string
+	if withCoords || withSelectors {
+		var err error
+		boxMap, selMap, err = resolveFromSnapshot(page, withCoords, withSelectors)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return axTreeForFrame(page, "", maxDepth, 0, withCoords, withSelectors, boxMap, selMap)
 }
 
-func axTreeForFrame(page *rod.Page, frameID proto.PageFrameID, maxDepth, startDepth int, withCoords, withSelectors bool) ([]AXNode, error) {
+func axTreeForFrame(page *rod.Page, frameID proto.PageFrameID, maxDepth, startDepth int, withCoords, withSelectors bool, boxMap map[proto.DOMBackendNodeID]*AXBox, selMap map[proto.DOMBackendNodeID]string) ([]AXNode, error) {
 	req := proto.AccessibilityGetFullAXTree{}
 	if frameID != "" {
 		req.FrameID = frameID
@@ -46,16 +55,6 @@ func axTreeForFrame(page *rod.Page, frameID proto.PageFrameID, maxDepth, startDe
 		nodeMap[res.Nodes[i].NodeID] = res.Nodes[i]
 	}
 
-	var boxMap map[proto.AccessibilityAXNodeID]*AXBox
-	if withCoords {
-		boxMap = resolveBoxes(page, res.Nodes)
-	}
-
-	var selMap map[proto.AccessibilityAXNodeID]string
-	if withSelectors {
-		selMap = resolveSelectors(page, res.Nodes)
-	}
-
 	var roots []AXNode
 	for _, n := range res.Nodes {
 		if len(n.ParentID) == 0 || n.ParentID == "" {
@@ -65,37 +64,73 @@ func axTreeForFrame(page *rod.Page, frameID proto.PageFrameID, maxDepth, startDe
 	return roots, nil
 }
 
-func resolveBoxes(page *rod.Page, nodes []*proto.AccessibilityAXNode) map[proto.AccessibilityAXNodeID]*AXBox {
-	boxMap := make(map[proto.AccessibilityAXNodeID]*AXBox)
-	for _, n := range nodes {
-		if n.Ignored || n.BackendDOMNodeID == 0 {
-			continue
-		}
-		res, err := proto.DOMGetBoxModel{BackendNodeID: n.BackendDOMNodeID}.Call(page)
-		if err != nil {
-			continue // hidden or off-screen elements
-		}
-		q := res.Model.Content
-		if len(q) < 8 {
-			continue
-		}
-		// Content quad: [x1,y1, x2,y2, x3,y3, x4,y4]
-		x := q[0]
-		y := q[1]
-		w := q[2] - q[0]
-		h := q[5] - q[1]
-		boxMap[n.NodeID] = &AXBox{X: x, Y: y, Width: w, Height: h}
+func resolveFromSnapshot(page *rod.Page, withCoords, withSelectors bool) (map[proto.DOMBackendNodeID]*AXBox, map[proto.DOMBackendNodeID]string, error) {
+	res, err := proto.DOMSnapshotCaptureSnapshot{ComputedStyles: []string{}}.Call(page)
+	if err != nil {
+		return nil, nil, err
 	}
-	return boxMap
+
+	var boxMap map[proto.DOMBackendNodeID]*AXBox
+	var selMap map[proto.DOMBackendNodeID]string
+
+	if withCoords {
+		boxMap = make(map[proto.DOMBackendNodeID]*AXBox)
+	}
+	if withSelectors {
+		selMap = make(map[proto.DOMBackendNodeID]string)
+	}
+
+	for _, doc := range res.Documents {
+		nodes := doc.Nodes
+		if nodes == nil {
+			continue
+		}
+
+		// Build box map from layout data
+		if withCoords && doc.Layout != nil {
+			for i, nodeIdx := range doc.Layout.NodeIndex {
+				if nodeIdx < 0 || nodeIdx >= len(nodes.BackendNodeID) {
+					continue
+				}
+				backendID := nodes.BackendNodeID[nodeIdx]
+				if backendID == 0 {
+					continue
+				}
+				if i >= len(doc.Layout.Bounds) {
+					continue
+				}
+				b := doc.Layout.Bounds[i]
+				if len(b) < 4 {
+					continue
+				}
+				boxMap[backendID] = &AXBox{X: b[0], Y: b[1], Width: b[2], Height: b[3]}
+			}
+		}
+
+		// Build selector map from node attributes
+		if withSelectors {
+			for i, backendID := range nodes.BackendNodeID {
+				if backendID == 0 {
+					continue
+				}
+				sel := buildSelectorFromSnapshot(i, nodes, res.Strings)
+				if sel != "" {
+					selMap[backendID] = sel
+				}
+			}
+		}
+	}
+
+	return boxMap, selMap, nil
 }
 
-func buildAXNode(page *rod.Page, n *proto.AccessibilityAXNode, nodeMap map[proto.AccessibilityAXNodeID]*proto.AccessibilityAXNode, boxMap map[proto.AccessibilityAXNodeID]*AXBox, selMap map[proto.AccessibilityAXNodeID]string, depth, maxDepth int, withCoords, withSelectors bool) AXNode {
+func buildAXNode(page *rod.Page, n *proto.AccessibilityAXNode, nodeMap map[proto.AccessibilityAXNodeID]*proto.AccessibilityAXNode, boxMap map[proto.DOMBackendNodeID]*AXBox, selMap map[proto.DOMBackendNodeID]string, depth, maxDepth int, withCoords, withSelectors bool) AXNode {
 	node := convertAXNode(n)
 	if boxMap != nil {
-		node.Box = boxMap[n.NodeID]
+		node.Box = boxMap[n.BackendDOMNodeID]
 	}
 	if selMap != nil {
-		node.Selector = selMap[n.NodeID]
+		node.Selector = selMap[n.BackendDOMNodeID]
 	}
 
 	if maxDepth > 0 && depth >= maxDepth {
@@ -107,7 +142,7 @@ func buildAXNode(page *rod.Page, n *proto.AccessibilityAXNode, nodeMap map[proto
 	if role == "Iframe" && n.BackendDOMNodeID != 0 {
 		desc, err := proto.DOMDescribeNode{BackendNodeID: n.BackendDOMNodeID}.Call(page)
 		if err == nil && desc.Node.FrameID != "" {
-			children, err := axTreeForFrame(page, desc.Node.FrameID, maxDepth, depth+1, withCoords, withSelectors)
+			children, err := axTreeForFrame(page, desc.Node.FrameID, maxDepth, depth+1, withCoords, withSelectors, boxMap, selMap)
 			if err == nil {
 				node.Children = children
 			}
@@ -240,27 +275,32 @@ func AXNodeInfo(page *rod.Page, selector string) (*AXNode, error) {
 	return nil, fmt.Errorf("no accessibility info for selector: %s", selector)
 }
 
-func resolveSelectors(page *rod.Page, nodes []*proto.AccessibilityAXNode) map[proto.AccessibilityAXNodeID]string {
-	selMap := make(map[proto.AccessibilityAXNodeID]string)
-	for _, n := range nodes {
-		if n.Ignored || n.BackendDOMNodeID == 0 {
-			continue
-		}
-		desc, err := proto.DOMDescribeNode{BackendNodeID: n.BackendDOMNodeID}.Call(page)
-		if err != nil {
-			continue
-		}
-		sel := buildSelector(desc.Node)
-		if sel != "" {
-			selMap[n.NodeID] = sel
+func buildSelectorFromSnapshot(nodeIdx int, nodes *proto.DOMSnapshotNodeTreeSnapshot, strings_ []string) string {
+	// Resolve tag name (snapshot gives uppercase like "DIV")
+	if nodeIdx >= len(nodes.NodeName) {
+		return ""
+	}
+	nameIdx := int(nodes.NodeName[nodeIdx])
+	if nameIdx < 0 || nameIdx >= len(strings_) {
+		return ""
+	}
+	tag := strings.ToLower(strings_[nameIdx])
+	if tag == "" || tag == "#document" || tag == "#text" || tag == "#comment" {
+		return ""
+	}
+
+	// Resolve attributes from flattened string-index pairs
+	attrs := make(map[string]string)
+	if nodeIdx < len(nodes.Attributes) {
+		indices := nodes.Attributes[nodeIdx]
+		for j := 0; j+1 < len(indices); j += 2 {
+			keyIdx := int(indices[j])
+			valIdx := int(indices[j+1])
+			if keyIdx >= 0 && keyIdx < len(strings_) && valIdx >= 0 && valIdx < len(strings_) {
+				attrs[strings_[keyIdx]] = strings_[valIdx]
+			}
 		}
 	}
-	return selMap
-}
-
-func buildSelector(node *proto.DOMNode) string {
-	attrs := parseAttributes(node.Attributes)
-	tag := node.LocalName
 
 	// #id
 	if id, ok := attrs["id"]; ok && id != "" {
@@ -284,14 +324,6 @@ func buildSelector(node *proto.DOMNode) string {
 	}
 
 	return ""
-}
-
-func parseAttributes(attrs []string) map[string]string {
-	m := make(map[string]string)
-	for i := 0; i+1 < len(attrs); i += 2 {
-		m[attrs[i]] = attrs[i+1]
-	}
-	return m
 }
 
 func FormatAXTree(nodes []AXNode, indent int) string {
