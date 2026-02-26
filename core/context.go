@@ -45,7 +45,7 @@ func stateDir() string {
 }
 
 func timeout() time.Duration {
-	if v := os.Getenv("ROD_TIMEOUT"); v != "" {
+	if v := os.Getenv("BROWSER_TIMEOUT"); v != "" {
 		if secs, err := strconv.ParseFloat(v, 64); err == nil {
 			return time.Duration(secs * float64(time.Second))
 		}

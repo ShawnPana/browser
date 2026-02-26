@@ -239,8 +239,8 @@ Cloud:
 
 Environment:
   BROWSER_HOME        State directory (default: ~/.browser); also controls output dir ($BROWSER_HOME/tmp/)
-  ROD_TIMEOUT         Command timeout in seconds (default: 30)
-  ROD_CHROME_BIN      Chrome binary path
+  BROWSER_TIMEOUT     Command timeout in seconds (default: 30)
+  BROWSER_CHROME_BIN  Chrome binary path
   BROWSER_USE_API_KEY Cloud API key
 
 Version: ` + Version + "\n")

@@ -33,7 +33,7 @@ cd browser
 go build -o browser .
 ```
 
-Requires Chrome or Chromium installed on the system (or set `ROD_CHROME_BIN`).
+Requires Chrome or Chromium installed on the system (or set `BROWSER_CHROME_BIN`).
 
 ## Quick Start
 
@@ -313,8 +313,8 @@ browser cloud poll <task-id>
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `BROWSER_HOME` | State directory (also controls output dir: `$BROWSER_HOME/tmp/`) | `~/.browser` |
-| `ROD_TIMEOUT` | Command timeout in seconds | `30` |
-| `ROD_CHROME_BIN` | Chrome binary path | auto-detect |
+| `BROWSER_TIMEOUT` | Command timeout in seconds | `30` |
+| `BROWSER_CHROME_BIN` | Chrome binary path | auto-detect |
 | `BROWSER_USE_API_KEY` | Cloud API key (alternative to `cloud login`) | none |
 
 ## Architecture
