@@ -141,9 +141,6 @@ browser visible <selector>         # Check element visibility
 browser assert <js-expr>           # Assert JS expression is truthy
 browser assert <js-expr> <expected>  # Assert JS result equals expected
 
-# JavaScript
-browser eval <expression>          # Evaluate JS and print result
-
 # Accessibility
 browser ax-tree                    # Print full accessibility tree
 browser ax-tree --depth 3          # Limit tree depth
